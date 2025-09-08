@@ -20,6 +20,10 @@ class LogRepository extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> reload() async {
+    await _load();
+  }
+
   Future<void> addLog(LogModel log) async {
     final id = await DBService.instance.insert('logs', {
       'alarm_id': log.alarmId,
@@ -35,6 +39,12 @@ class LogRepository extends ChangeNotifier {
   Future<void> removeLog(int id) async {
     await DBService.instance.delete('logs', id);
     _items.removeWhere((l) => l.id == id);
+    notifyListeners();
+  }
+
+  Future<void> clearAllLogs() async {
+    await DBService.instance.rawUpdate('DELETE FROM logs');
+    _items.clear();
     notifyListeners();
   }
 }

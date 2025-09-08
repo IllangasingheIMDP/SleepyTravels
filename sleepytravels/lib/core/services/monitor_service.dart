@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../../data/repositories/alarm_repository.dart';
+import '../../data/repositories/log_repository.dart';
+import '../../data/models/log_model.dart';
 import 'notification_service.dart';
 import 'permission_service.dart';
 import 'audio_service.dart';
@@ -12,6 +14,7 @@ class MonitorService {
   MonitorService._internal();
   final Distance _distance = const Distance();
   final AlarmRepository _repo = AlarmRepository();
+  final LogRepository _logRepo = LogRepository();
   Timer? _timer;
   final Set<int> _triggeredAlarms = {}; // Track already triggered alarms
   bool _isProcessingAlarms = false; // Prevent concurrent processing
@@ -72,6 +75,16 @@ class MonitorService {
 
             // Mark this alarm as triggered
             _triggeredAlarms.add(alarm.id!);
+
+            // Create a log entry for this trigger
+            final logEntry = LogModel(
+              alarmId: alarm.id,
+              triggeredAt: DateTime.now().millisecondsSinceEpoch,
+              lat: pos.latitude,
+              lng: pos.longitude,
+            );
+            await _logRepo.addLog(logEntry);
+            print('MonitorService: Log entry created for alarm ${alarm.id}');
 
             // Trigger notification (only once per alarm)
             await NotificationService.instance.showNotification(

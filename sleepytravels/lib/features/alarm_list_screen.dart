@@ -32,11 +32,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.alarm_off,
-                    size: 64,
-                    color: Colors.grey,
-                  ),
+                  Icon(Icons.alarm_off, size: 64, color: Colors.grey),
                   SizedBox(height: 16),
                   Text(
                     "No alarms saved.",
@@ -89,9 +85,9 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 12),
-                      
+
                       // Location details
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -119,7 +115,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                               style: const TextStyle(fontSize: 13),
                             ),
                             const SizedBox(height: 8),
-                            
+
                             const Text(
                               "Radius:",
                               style: TextStyle(
@@ -132,9 +128,9 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                               "${alarm.radiusM} meters",
                               style: const TextStyle(fontSize: 13),
                             ),
-                            
+
                             const SizedBox(height: 8),
-                            
+
                             const Text(
                               "Sound:",
                               style: TextStyle(
@@ -157,9 +153,9 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                                     : Colors.black,
                               ),
                             ),
-                            
+
                             const SizedBox(height: 8),
-                            
+
                             const Text(
                               "Created:",
                               style: TextStyle(
@@ -175,9 +171,9 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 12),
-                      
+
                       // Action buttons
                       Row(
                         children: [
@@ -248,10 +244,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
   void _editAlarm(alarm) async {
     final result = await showDialog<bool>(
       context: context,
-      builder: (context) => EditAlarmDialog(
-        alarm: alarm,
-        repository: _repo,
-      ),
+      builder: (context) => EditAlarmDialog(alarm: alarm, repository: _repo),
     );
 
     if (result == true && mounted) {

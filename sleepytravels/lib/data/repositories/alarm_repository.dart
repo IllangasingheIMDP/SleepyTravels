@@ -62,7 +62,6 @@ class AlarmRepository extends ChangeNotifier {
     notifyListeners();
 
     // Debug: Print the alarm that was added
-    
   }
 
   List<AlarmModel> getActiveAlarms() {
@@ -74,8 +73,6 @@ class AlarmRepository extends ChangeNotifier {
     final allAlarms = rows.map((r) => AlarmModel.fromMap(r)).toList();
     final activeAlarms = allAlarms.where((a) => a.active).toList();
 
-   
- 
     return activeAlarms;
   }
 
@@ -91,14 +88,14 @@ class AlarmRepository extends ChangeNotifier {
         'UPDATE alarms SET radius_m = ?, sound_path = ? WHERE id = ?',
         [newRadius, newSoundPath, id],
       );
-      
+
       // Update the local copy
       final alarmIndex = _items.indexWhere((a) => a.id == id);
       if (alarmIndex != -1) {
         _items[alarmIndex].radiusM = newRadius;
         _items[alarmIndex].soundPath = newSoundPath;
       }
-      
+
       notifyListeners();
     } catch (e) {
       print('Error updating alarm: $e');

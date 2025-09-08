@@ -16,12 +16,8 @@ import 'package:file_picker/file_picker.dart';
 class MapScreen extends StatefulWidget {
   final LatLng? initialLocation;
   final int? initialRadius;
-  
-  const MapScreen({
-    super.key,
-    this.initialLocation,
-    this.initialRadius,
-  });
+
+  const MapScreen({super.key, this.initialLocation, this.initialRadius});
 
   @override
   State<MapScreen> createState() => _MapScreenState();

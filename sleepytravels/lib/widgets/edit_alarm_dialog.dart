@@ -26,7 +26,9 @@ class _EditAlarmDialogState extends State<EditAlarmDialog> {
   @override
   void initState() {
     super.initState();
-    _radiusController = TextEditingController(text: widget.alarm.radiusM.toString());
+    _radiusController = TextEditingController(
+      text: widget.alarm.radiusM.toString(),
+    );
     _selectedSoundPath = widget.alarm.soundPath;
   }
 
@@ -77,9 +79,9 @@ class _EditAlarmDialogState extends State<EditAlarmDialog> {
     } catch (e) {
       print('Error picking audio file: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking audio file: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking audio file: $e')));
       }
     } finally {
       setState(() {
@@ -90,11 +92,11 @@ class _EditAlarmDialogState extends State<EditAlarmDialog> {
 
   Future<void> _saveChanges() async {
     final radiusText = _radiusController.text.trim();
-    
+
     if (radiusText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a radius')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter a radius')));
       return;
     }
 
@@ -119,7 +121,9 @@ class _EditAlarmDialogState extends State<EditAlarmDialog> {
       );
 
       if (mounted) {
-        Navigator.of(context).pop(true); // Return true to indicate changes were made
+        Navigator.of(
+          context,
+        ).pop(true); // Return true to indicate changes were made
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Alarm updated successfully')),
         );
@@ -127,9 +131,9 @@ class _EditAlarmDialogState extends State<EditAlarmDialog> {
     } catch (e) {
       print('Error updating alarm: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating alarm: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error updating alarm: $e')));
       }
     } finally {
       setState(() {
@@ -159,7 +163,7 @@ class _EditAlarmDialogState extends State<EditAlarmDialog> {
             Text('Lat: ${widget.alarm.destLat.toStringAsFixed(6)}'),
             Text('Lng: ${widget.alarm.destLng.toStringAsFixed(6)}'),
             const SizedBox(height: 16),
-            
+
             const Text(
               'Radius (meters):',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -174,7 +178,7 @@ class _EditAlarmDialogState extends State<EditAlarmDialog> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             const Text(
               'Audio File:',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -190,7 +194,9 @@ class _EditAlarmDialogState extends State<EditAlarmDialog> {
               child: Text(
                 _getAudioFileName(_selectedSoundPath),
                 style: TextStyle(
-                  color: _selectedSoundPath != null ? Colors.black : Colors.grey,
+                  color: _selectedSoundPath != null
+                      ? Colors.black
+                      : Colors.grey,
                 ),
               ),
             ),
