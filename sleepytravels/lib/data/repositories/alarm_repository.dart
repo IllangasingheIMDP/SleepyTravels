@@ -84,4 +84,25 @@ class AlarmRepository extends ChangeNotifier {
     _items.removeWhere((a) => a.id == id);
     notifyListeners();
   }
+
+  Future<void> updateAlarm(int id, int newRadius, String? newSoundPath) async {
+    try {
+      await DBService.instance.rawUpdate(
+        'UPDATE alarms SET radius_m = ?, sound_path = ? WHERE id = ?',
+        [newRadius, newSoundPath, id],
+      );
+      
+      // Update the local copy
+      final alarmIndex = _items.indexWhere((a) => a.id == id);
+      if (alarmIndex != -1) {
+        _items[alarmIndex].radiusM = newRadius;
+        _items[alarmIndex].soundPath = newSoundPath;
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      print('Error updating alarm: $e');
+      rethrow;
+    }
+  }
 }

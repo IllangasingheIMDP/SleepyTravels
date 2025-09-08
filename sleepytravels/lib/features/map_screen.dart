@@ -14,7 +14,14 @@ import 'logs_screen.dart';
 import 'package:file_picker/file_picker.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  final LatLng? initialLocation;
+  final int? initialRadius;
+  
+  const MapScreen({
+    super.key,
+    this.initialLocation,
+    this.initialRadius,
+  });
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -48,6 +55,17 @@ class _MapScreenState extends State<MapScreen> {
     _checkPermissionStatus();
     _getCurrentLocation();
     _startLocationUpdates();
+
+    // Set initial location and radius if provided
+    if (widget.initialLocation != null) {
+      selectedLocation = widget.initialLocation;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _mapController.move(widget.initialLocation!, 15.0);
+      });
+    }
+    if (widget.initialRadius != null) {
+      radius = widget.initialRadius!;
+    }
 
     // Listen to audio service playing state changes
     AudioService.instance.isPlayingNotifier.addListener(_onAudioStateChanged);
