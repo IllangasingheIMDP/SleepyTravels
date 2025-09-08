@@ -62,11 +62,7 @@ class _LogsScreenState extends State<LogsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.history,
-                    size: 64,
-                    color: Colors.grey,
-                  ),
+                  const Icon(Icons.history, size: 64, color: Colors.grey),
                   const SizedBox(height: 16),
                   const Text(
                     "No alarm logs available",
@@ -101,10 +97,7 @@ class _LogsScreenState extends State<LogsScreen> {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: Colors.orange,
-                    child: const Icon(
-                      Icons.alarm,
-                      color: Colors.white,
-                    ),
+                    child: const Icon(Icons.alarm, color: Colors.white),
                   ),
                   title: Text(
                     "Alarm Triggered",
@@ -114,7 +107,9 @@ class _LogsScreenState extends State<LogsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("Time: ${_formatDate(log.triggeredAt)}"),
-                      Text("Location: ${log.lat.toStringAsFixed(6)}, ${log.lng.toStringAsFixed(6)}"),
+                      Text(
+                        "Location: ${log.lat.toStringAsFixed(6)}, ${log.lng.toStringAsFixed(6)}",
+                      ),
                       if (log.alarmId != null) Text("Alarm ID: ${log.alarmId}"),
                     ],
                   ),
@@ -143,13 +138,13 @@ class _LogsScreenState extends State<LogsScreen> {
       lat: 37.7749,
       lng: -122.4194,
     );
-    
+
     await _repo.addLog(testLog);
-    
+
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Test log added")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Test log added")));
     }
   }
 
@@ -188,9 +183,9 @@ class _LogsScreenState extends State<LogsScreen> {
 
   Future<void> _clearAllLogs() async {
     if (_repo.items.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No logs to clear")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("No logs to clear")));
       return;
     }
 
@@ -198,7 +193,9 @@ class _LogsScreenState extends State<LogsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Clear All Logs"),
-        content: Text("Are you sure you want to delete all ${_repo.items.length} log entries?"),
+        content: Text(
+          "Are you sure you want to delete all ${_repo.items.length} log entries?",
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -217,7 +214,7 @@ class _LogsScreenState extends State<LogsScreen> {
       try {
         final logCount = _repo.items.length;
         await _repo.clearAllLogs();
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -229,9 +226,9 @@ class _LogsScreenState extends State<LogsScreen> {
       } catch (e) {
         print('Error clearing logs: $e');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error clearing logs: $e")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Error clearing logs: $e")));
         }
       }
     }
