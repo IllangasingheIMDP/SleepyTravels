@@ -5,6 +5,12 @@
 <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 <!-- Foreground service permission -->
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<!-- Audio permissions for alarm sounds -->
+<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+<uses-permission android:name="android.permission.WAKE_LOCK" />
+<uses-permission android:name="android.permission.VIBRATE" />
+<!-- Notification permissions for Android 13+ -->
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:label="sleepytravels"
         android:name="${applicationName}"

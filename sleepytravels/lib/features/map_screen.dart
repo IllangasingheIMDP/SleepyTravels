@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
+import 'dart:async';
 import '../data/repositories/alarm_repository.dart';
 import '../data/models/alarm_model.dart';
+import '../core/services/permission_service.dart';
+import '../core/services/audio_file_service.dart';
+import '../core/services/audio_service.dart';
 import 'alarm_list_screen.dart';
 import 'logs_screen.dart';
 import 'package:file_picker/file_picker.dart';
@@ -16,18 +21,330 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   LatLng? selectedLocation;
+  LatLng? currentLocation;
   final AlarmRepository _repo = AlarmRepository();
   int radius = 2000;
   String? mp3Path;
+  LocationPermission? currentPermission;
+  final MapController _mapController = MapController();
+  Timer? _locationTimer;
+  final Distance _distance = const Distance();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermissionStatus();
+    _getCurrentLocation();
+    _startLocationUpdates();
+    
+    // Listen to audio service playing state changes
+    AudioService.instance.isPlayingNotifier.addListener(_onAudioStateChanged);
+  }
+
+  double? _calculateDistanceToSelected() {
+    if (currentLocation == null || selectedLocation == null) return null;
+    return _distance.as(LengthUnit.Meter, currentLocation!, selectedLocation!);
+  }
+
+  void _onAudioStateChanged() {
+    // Update UI when audio playing state changes
+    print('MapScreen: Audio playing state changed: ${AudioService.instance.isPlaying}');
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _showDebugInfo() async {
+    final alarms = await _repo.getActiveAlarmsFromDB();
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Debug Info'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Current Location: ${currentLocation?.latitude.toStringAsFixed(6)}, ${currentLocation?.longitude.toStringAsFixed(6)}',
+              ),
+              Text(
+                'Selected Location: ${selectedLocation?.latitude.toStringAsFixed(6)}, ${selectedLocation?.longitude.toStringAsFixed(6)}',
+              ),
+              if (currentLocation != null && selectedLocation != null)
+                Text(
+                  'Distance: ${_calculateDistanceToSelected()?.toStringAsFixed(2)} meters',
+                ),
+              const SizedBox(height: 10),
+              Text('Active Alarms: ${alarms.length}'),
+              ...alarms.map(
+                (alarm) => Padding(
+                  padding: const EdgeInsets.only(top: 5),
+                  child: Text(
+                    'Alarm ${alarm.id}: ${alarm.destLat.toStringAsFixed(6)}, ${alarm.destLng.toStringAsFixed(6)} (${alarm.radiusM}m)',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text('Permission: $currentPermission'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _locationTimer?.cancel();
+    // Remove the audio service listener
+    AudioService.instance.isPlayingNotifier.removeListener(_onAudioStateChanged);
+    super.dispose();
+  }
+
+  void _startLocationUpdates() {
+    _locationTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _getCurrentLocation();
+    });
+  }
+
+  Future<void> _checkPermissionStatus() async {
+    final permission = await PermissionService.instance.getCurrentPermission();
+    if (mounted) {
+      setState(() => currentPermission = permission);
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      final permission = await PermissionService.instance
+          .getCurrentPermission();
+      if (PermissionService.instance.hasLocationPermission(permission)) {
+        final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+        if (mounted) {
+          setState(() {
+            currentLocation = LatLng(position.latitude, position.longitude);
+          });
+          // Optionally center the map on current location
+          _mapController.move(currentLocation!, 15.0);
+        }
+      }
+    } catch (e) {
+      print('Error getting current location: $e');
+    }
+  }
+
+  void _centerOnCurrentLocation() {
+    if (currentLocation != null) {
+      _mapController.move(currentLocation!, 15.0);
+    } else {
+      _getCurrentLocation();
+    }
+  }
+
+  Widget _buildLocationLegend() {
+    return Container(
+      margin: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1),
+                ),
+                child: const Icon(Icons.person, color: Colors.white, size: 10),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                currentLocation != null
+                    ? 'Your location'
+                    : 'Location unavailable',
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+          if (selectedLocation != null) ...[
+            const SizedBox(height: 4),
+            const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.location_on, color: Colors.red, size: 16),
+                SizedBox(width: 4),
+                Text('Alarm location', style: TextStyle(fontSize: 12)),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _stopAlarm() async {
+    try {
+      // Stop the audio
+      await AudioService.instance.stop();
+
+      // Deactivate all active alarms
+      final activeAlarms = await _repo.getActiveAlarmsFromDB();
+      for (var alarm in activeAlarms) {
+        await _repo.deactivateAlarm(alarm.id!);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Stopped alarm and deactivated ${activeAlarms.length} active alarm(s)',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+
+      print(
+        'MapScreen: Stopped alarm and deactivated ${activeAlarms.length} alarms',
+      );
+    } catch (e) {
+      print('Error stopping alarm: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error stopping alarm: $e')));
+      }
+    }
+  }
 
   Future<void> pickMP3() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['mp3'],
-    );
-    if (result != null && result.files.single.path != null) {
-      setState(() => mp3Path = result.files.single.path);
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['mp3'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final tempPath = result.files.single.path!;
+        final originalName = result.files.single.name;
+
+        // Save the file to permanent storage
+        final permanentPath = await AudioFileService.instance.saveAudioFile(
+          tempPath,
+          originalName,
+        );
+
+        if (permanentPath != null) {
+          setState(() => mp3Path = permanentPath);
+          print(
+            'AudioFile: Successfully saved $originalName to permanent location',
+          );
+        } else {
+          throw Exception('Failed to save audio file to permanent location');
+        }
+      }
+    } catch (e) {
+      print('Error picking MP3 file: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error selecting audio file: $e')),
+        );
+      }
     }
+  }
+
+  Widget _buildPermissionBanner() {
+    if (currentPermission == null) return const SizedBox.shrink();
+
+    String message;
+    Color color;
+    IconData icon;
+    VoidCallback? onTap;
+
+    switch (currentPermission!) {
+      case LocationPermission.always:
+      case LocationPermission.whileInUse:
+        return const SizedBox.shrink(); // No banner needed for granted permissions
+      case LocationPermission.denied:
+        message = "Location permission needed for alarms to work";
+        color = Colors.orange;
+        icon = Icons.location_off;
+        onTap = () async {
+          await PermissionService.instance.requestLocationPermission();
+          _checkPermissionStatus();
+        };
+        break;
+      case LocationPermission.deniedForever:
+        message =
+            "Location permission permanently denied. Tap to open settings.";
+        color = Colors.red;
+        icon = Icons.location_disabled;
+        onTap = () => PermissionService.instance.openAppSettings();
+        break;
+      case LocationPermission.unableToDetermine:
+        message = "Unable to determine location permission status";
+        color = Colors.grey;
+        icon = Icons.help_outline;
+        onTap = null;
+        break;
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      color: color,
+      child: InkWell(
+        onTap: onTap,
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            if (onTap != null)
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white,
+                size: 16,
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -36,6 +353,23 @@ class _MapScreenState extends State<MapScreen> {
       appBar: AppBar(
         title: const Text("SleepyTravels"),
         actions: [
+          // Stop alarm button - only show when alarm is playing
+          if (AudioService.instance.isPlaying)
+            IconButton(
+              icon: const Icon(Icons.stop_circle, color: Colors.red),
+              onPressed: _stopAlarm,
+              tooltip: 'Stop Alarm',
+            ),
+          IconButton(
+            icon: const Icon(Icons.bug_report),
+            onPressed: () => _showDebugInfo(),
+            tooltip: 'Debug Info',
+          ),
+          IconButton(
+            icon: const Icon(Icons.my_location),
+            onPressed: _centerOnCurrentLocation,
+            tooltip: 'Center on my location',
+          ),
           IconButton(
             icon: const Icon(Icons.list),
             onPressed: () => Navigator.push(
@@ -54,33 +388,63 @@ class _MapScreenState extends State<MapScreen> {
       ),
       body: Column(
         children: [
+          _buildPermissionBanner(),
           Expanded(
-            child: FlutterMap(
-              options: MapOptions(
-                initialCenter: LatLng(6.9271, 79.8612),
-                initialZoom: 13,
-                onTap: (tapPosition, point) {
-                  setState(() => selectedLocation = point);
-                },
-              ),
+            child: Stack(
               children: [
-                TileLayer(
-                  urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                  userAgentPackageName: 'com.example.sleepytravels_app',
-                ),
-                if (selectedLocation != null)
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: selectedLocation!,
-                        child: const Icon(
-                          Icons.location_on,
-                          color: Colors.red,
-                          size: 40,
-                        ),
-                      ),
-                    ],
+                FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: LatLng(6.9271, 79.8612),
+                    initialZoom: 13,
+                    onTap: (tapPosition, point) {
+                      setState(() => selectedLocation = point);
+                    },
                   ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                      userAgentPackageName: 'com.example.sleepytravels_app',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        // Current location marker
+                        if (currentLocation != null)
+                          Marker(
+                            point: currentLocation!,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        // Selected location marker (for alarm)
+                        if (selectedLocation != null)
+                          Marker(
+                            point: selectedLocation!,
+                            child: const Icon(
+                              Icons.location_on,
+                              color: Colors.red,
+                              size: 40,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+                // Legend positioned at top-left
+                Positioned(top: 10, left: 10, child: _buildLocationLegend()),
               ],
             ),
           ),
@@ -89,6 +453,27 @@ class _MapScreenState extends State<MapScreen> {
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 children: [
+                  // Distance display
+                  if (currentLocation != null && selectedLocation != null)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(8.0),
+                      margin: const EdgeInsets.only(bottom: 8.0),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Text(
+                        'Distance to alarm location: ${_calculateDistanceToSelected()?.toStringAsFixed(1) ?? "Unknown"} meters',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.blue.shade700,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   Row(
                     children: [
                       const Text("Radius (m): "),
@@ -115,17 +500,29 @@ class _MapScreenState extends State<MapScreen> {
                       ),
                       ElevatedButton(
                         onPressed: () async {
-                          final alarm = AlarmModel(
-                            destLat: selectedLocation!.latitude,
-                            destLng: selectedLocation!.longitude,
-                            radiusM: radius,
-                            soundPath: mp3Path,
-                            createdAt: DateTime.now().millisecondsSinceEpoch,
-                          );
-                          await _repo.addAlarm(alarm);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Alarm saved!")),
-                          );
+                          try {
+                            final alarm = AlarmModel(
+                              destLat: selectedLocation!.latitude,
+                              destLng: selectedLocation!.longitude,
+                              radiusM: radius,
+                              soundPath: mp3Path,
+                              createdAt: DateTime.now().millisecondsSinceEpoch,
+                            );
+                            await _repo.addAlarm(alarm);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Alarm saved!")),
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Error saving alarm: $e"),
+                                ),
+                              );
+                            }
+                          }
                         },
                         child: const Text("Save Alarm"),
                       ),
@@ -136,6 +533,15 @@ class _MapScreenState extends State<MapScreen> {
             ),
         ],
       ),
+      floatingActionButton: AudioService.instance.isPlaying
+          ? FloatingActionButton.extended(
+              onPressed: _stopAlarm,
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.stop),
+              label: const Text('STOP ALARM'),
+            )
+          : null,
     );
   }
 }

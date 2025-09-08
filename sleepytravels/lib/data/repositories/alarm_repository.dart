@@ -60,10 +60,23 @@ class AlarmRepository extends ChangeNotifier {
     alarm.id = id;
     _items.add(alarm);
     notifyListeners();
+
+    // Debug: Print the alarm that was added
+    
   }
 
   List<AlarmModel> getActiveAlarms() {
     return _items.where((a) => a.active).toList(growable: false);
+  }
+
+  Future<List<AlarmModel>> getActiveAlarmsFromDB() async {
+    final rows = await DBService.instance.query('alarms');
+    final allAlarms = rows.map((r) => AlarmModel.fromMap(r)).toList();
+    final activeAlarms = allAlarms.where((a) => a.active).toList();
+
+   
+ 
+    return activeAlarms;
   }
 
   Future<void> removeAlarm(int id) async {

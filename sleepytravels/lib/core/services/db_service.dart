@@ -40,18 +40,30 @@ lng REAL
   }
 
   Future<int> insert(String table, Map<String, Object?> data) async {
+    if (_db == null) {
+      throw Exception('Database not initialized. Call init() first.');
+    }
     return await _db!.insert(table, data);
   }
 
   Future<List<Map<String, Object?>>> query(String table) async {
+    if (_db == null) {
+      throw Exception('Database not initialized. Call init() first.');
+    }
     return await _db!.query(table);
   }
 
   Future<int> delete(String table, int id) async {
+    if (_db == null) {
+      throw Exception('Database not initialized. Call init() first.');
+    }
     return await _db!.delete(table, where: 'id = ?', whereArgs: [id]);
   }
 
   Future<int> rawUpdate(String sql, [List<Object?>? args]) async {
+    if (_db == null) {
+      throw Exception('Database not initialized. Call init() first.');
+    }
     return await _db!.rawUpdate(sql, args);
   }
 }
