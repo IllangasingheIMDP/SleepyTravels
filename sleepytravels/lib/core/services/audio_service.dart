@@ -17,7 +17,7 @@ class AudioService {
       final wasPlaying = _isPlaying;
       _isPlaying = state.playing;
       _isPlayingNotifier.value = _isPlaying;
-      
+
       if (wasPlaying != _isPlaying) {
         print('AudioService: Player state changed - playing: $_isPlaying');
       }
@@ -37,11 +37,9 @@ class AudioService {
       // Check if file exists using our audio file service
       final exists = await AudioFileService.instance.audioFileExists(path);
       if (!exists) {
-        
         return;
       }
 
-     
       // Stop any current playback
       await _player.stop();
 
@@ -58,7 +56,6 @@ class AudioService {
       await _player.play();
       _isPlaying = true;
       _isPlayingNotifier.value = true;
-
     } catch (e) {
       print('AudioService: Error playing audio: $e');
       print('AudioService: Error type: ${e.runtimeType}');
@@ -72,7 +69,6 @@ class AudioService {
       await _player.stop();
       _isPlaying = false;
       _isPlayingNotifier.value = false;
-      
     } catch (e) {
       print('AudioService: Error stopping audio: $e');
       _isPlaying = false;

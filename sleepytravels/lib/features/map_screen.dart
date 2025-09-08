@@ -8,6 +8,7 @@ import '../data/models/alarm_model.dart';
 import '../core/services/permission_service.dart';
 import '../core/services/audio_file_service.dart';
 import '../core/services/audio_service.dart';
+import '../core/services/location_search_service.dart';
 import 'alarm_list_screen.dart';
 import 'logs_screen.dart';
 import 'package:file_picker/file_picker.dart';
@@ -30,13 +31,24 @@ class _MapScreenState extends State<MapScreen> {
   Timer? _locationTimer;
   final Distance _distance = const Distance();
 
+  // Search functionality
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  List<LocationSearchResult> _searchResults = [];
+  bool _isSearching = false;
+  bool _showSearchResults = false;
+  Timer? _searchDebounceTimer;
+
+  // Flag to track if this is the initial location load
+  bool _hasInitialLocationBeenSet = false;
+
   @override
   void initState() {
     super.initState();
     _checkPermissionStatus();
     _getCurrentLocation();
     _startLocationUpdates();
-    
+
     // Listen to audio service playing state changes
     AudioService.instance.isPlayingNotifier.addListener(_onAudioStateChanged);
   }
@@ -48,10 +60,91 @@ class _MapScreenState extends State<MapScreen> {
 
   void _onAudioStateChanged() {
     // Update UI when audio playing state changes
-    print('MapScreen: Audio playing state changed: ${AudioService.instance.isPlaying}');
+    print(
+      'MapScreen: Audio playing state changed: ${AudioService.instance.isPlaying}',
+    );
     if (mounted) {
       setState(() {});
     }
+  }
+
+  void _onSearchChanged(String query) {
+    // Cancel previous timer
+    _searchDebounceTimer?.cancel();
+
+    if (query.trim().isEmpty) {
+      setState(() {
+        _showSearchResults = false;
+        _searchResults = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    // Debounce search to avoid too many API calls
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _performSearch(query);
+    });
+  }
+
+  Future<void> _performSearch(String query) async {
+    if (!mounted) return;
+
+    setState(() {
+      _isSearching = true;
+      _showSearchResults = true;
+    });
+
+    try {
+      final results = await LocationSearchService.instance.searchLocation(
+        query,
+      );
+      if (mounted) {
+        setState(() {
+          _searchResults = results;
+          _isSearching = false;
+        });
+      }
+    } catch (e) {
+      print('Error searching location: $e');
+      if (mounted) {
+        setState(() {
+          _searchResults = [];
+          _isSearching = false;
+        });
+      }
+    }
+  }
+
+  void _selectSearchResult(LocationSearchResult result) {
+    setState(() {
+      selectedLocation = result.coordinates;
+      _showSearchResults = false;
+      _searchController.clear();
+    });
+
+    // Move map to selected location
+    _mapController.move(result.coordinates, 15.0);
+
+    // Unfocus search field
+    _searchFocusNode.unfocus();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Selected: ${result.displayName}'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _clearSearch() {
+    setState(() {
+      _searchController.clear();
+      _showSearchResults = false;
+      _searchResults = [];
+      _isSearching = false;
+    });
+    _searchFocusNode.unfocus();
   }
 
   void _showDebugInfo() async {
@@ -105,8 +198,13 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void dispose() {
     _locationTimer?.cancel();
+    _searchDebounceTimer?.cancel();
+    _searchController.dispose();
+    _searchFocusNode.dispose();
     // Remove the audio service listener
-    AudioService.instance.isPlayingNotifier.removeListener(_onAudioStateChanged);
+    AudioService.instance.isPlayingNotifier.removeListener(
+      _onAudioStateChanged,
+    );
     super.dispose();
   }
 
@@ -135,8 +233,12 @@ class _MapScreenState extends State<MapScreen> {
           setState(() {
             currentLocation = LatLng(position.latitude, position.longitude);
           });
-          // Optionally center the map on current location
-          _mapController.move(currentLocation!, 15.0);
+
+          // Only center the map on current location for the initial load
+          if (!_hasInitialLocationBeenSet) {
+            _mapController.move(currentLocation!, 15.0);
+            _hasInitialLocationBeenSet = true;
+          }
         }
       }
     } catch (e) {
@@ -347,6 +449,104 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  Widget _buildSearchBar() {
+    return Container(
+      margin: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _searchController,
+        focusNode: _searchFocusNode,
+        onChanged: _onSearchChanged,
+        decoration: InputDecoration(
+          hintText: 'Search for a location...',
+          prefixIcon: const Icon(Icons.search),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: _clearSearch,
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    if (!_showSearchResults) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      constraints: const BoxConstraints(maxHeight: 300),
+      child: _isSearching
+          ? const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  SizedBox(width: 12),
+                  Text('Searching...'),
+                ],
+              ),
+            )
+          : _searchResults.isEmpty
+          ? const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text('No results found'),
+            )
+          : ListView.builder(
+              shrinkWrap: true,
+              itemCount: _searchResults.length,
+              itemBuilder: (context, index) {
+                final result = _searchResults[index];
+                return ListTile(
+                  leading: const Icon(Icons.location_on, color: Colors.blue),
+                  title: Text(
+                    result.displayName,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  subtitle: Text(
+                    result.address,
+                    style: const TextStyle(fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onTap: () => _selectSearchResult(result),
+                );
+              },
+            ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -398,7 +598,11 @@ class _MapScreenState extends State<MapScreen> {
                     initialCenter: LatLng(6.9271, 79.8612),
                     initialZoom: 13,
                     onTap: (tapPosition, point) {
-                      setState(() => selectedLocation = point);
+                      setState(() {
+                        selectedLocation = point;
+                        // Hide search results when user taps on map
+                        _showSearchResults = false;
+                      });
                     },
                   ),
                   children: [
@@ -443,8 +647,17 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                   ],
                 ),
-                // Legend positioned at top-left
-                Positioned(top: 10, left: 10, child: _buildLocationLegend()),
+                // Search bar positioned at top
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  right: 10,
+                  child: Column(
+                    children: [_buildSearchBar(), _buildSearchResults()],
+                  ),
+                ),
+                // Legend positioned at bottom-left
+                Positioned(bottom: 10, left: 10, child: _buildLocationLegend()),
               ],
             ),
           ),
