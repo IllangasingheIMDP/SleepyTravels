@@ -28,6 +28,9 @@ class _MapScreenState extends State<MapScreen> {
   LatLng? currentLocation;
   final AlarmRepository _repo = AlarmRepository();
   int radius = 2000;
+  final TextEditingController _radiusController = TextEditingController();
+  bool _isPanelExpanded = true;
+  bool _alarmJustSaved = false;
   String? mp3Path;
   LocationPermission? currentPermission;
   final MapController _mapController = MapController();
@@ -215,6 +218,7 @@ class _MapScreenState extends State<MapScreen> {
     _searchDebounceTimer?.cancel();
     _searchController.dispose();
     _searchFocusNode.dispose();
+    _radiusController.dispose();
     // Remove the audio service listener
     AudioService.instance.isPlayingNotifier.removeListener(
       _onAudioStateChanged,
@@ -269,17 +273,22 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget _buildLocationLegend() {
+    const Color primaryGold = Color(0xFFFFD700);
+    const Color cardBackground = Color(0xFF1A1A1A);
+    const Color navyBlue = Color(0xFF1A237E);
+
     return Container(
       margin: const EdgeInsets.all(8.0),
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primaryGold.withOpacity(0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black26,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: primaryGold.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -291,32 +300,68 @@ class _MapScreenState extends State<MapScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 16,
-                height: 16,
+                width: 18,
+                height: 18,
                 decoration: BoxDecoration(
-                  color: Colors.blue,
+                  color: primaryGold,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1),
+                  border: Border.all(color: navyBlue, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryGold.withOpacity(0.5),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: const Icon(Icons.person, color: Colors.white, size: 10),
+                child: Icon(Icons.person, color: navyBlue, size: 12),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 8),
               Text(
                 currentLocation != null
                     ? 'Your location'
                     : 'Location unavailable',
-                style: const TextStyle(fontSize: 12),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
               ),
             ],
           ),
           if (selectedLocation != null) ...[
-            const SizedBox(height: 4),
-            const Row(
+            const SizedBox(height: 8),
+            Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.location_on, color: Colors.red, size: 16),
-                SizedBox(width: 4),
-                Text('Alarm location', style: TextStyle(fontSize: 12)),
+                Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: primaryGold, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.5),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(Icons.location_on, color: primaryGold, size: 12),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Alarm location',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ],
             ),
           ],
@@ -399,6 +444,8 @@ class _MapScreenState extends State<MapScreen> {
   Widget _buildPermissionBanner() {
     if (currentPermission == null) return const SizedBox.shrink();
 
+    const Color primaryGold = Color(0xFFFFD700);
+
     String message;
     Color color;
     IconData icon;
@@ -410,7 +457,7 @@ class _MapScreenState extends State<MapScreen> {
         return const SizedBox.shrink(); // No banner needed for granted permissions
       case LocationPermission.denied:
         message = "Location permission needed for alarms to work";
-        color = Colors.orange;
+        color = Colors.orange.shade700;
         icon = Icons.location_off;
         onTap = () async {
           await PermissionService.instance.requestLocationPermission();
@@ -420,13 +467,13 @@ class _MapScreenState extends State<MapScreen> {
       case LocationPermission.deniedForever:
         message =
             "Location permission permanently denied. Tap to open settings.";
-        color = Colors.red;
+        color = Colors.red.shade700;
         icon = Icons.location_disabled;
         onTap = () => PermissionService.instance.openAppSettings();
         break;
       case LocationPermission.unableToDetermine:
         message = "Unable to determine location permission status";
-        color = Colors.grey;
+        color = Colors.grey.shade700;
         icon = Icons.help_outline;
         onTap = null;
         break;
@@ -434,28 +481,50 @@ class _MapScreenState extends State<MapScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      color: color,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color, color.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(color: primaryGold.withOpacity(0.3), width: 1),
+      ),
       child: InkWell(
         onTap: onTap,
         child: Row(
           children: [
-            Icon(icon, color: Colors.white),
-            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: primaryGold.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: primaryGold, size: 20),
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
                 ),
               ),
             ),
             if (onTap != null)
-              const Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.white,
-                size: 16,
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: primaryGold.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  Icons.arrow_forward_ios,
+                  color: primaryGold,
+                  size: 16,
+                ),
               ),
           ],
         ),
@@ -464,16 +533,21 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget _buildSearchBar() {
+    const Color primaryGold = Color(0xFFFFD700);
+    const Color cardBackground = Color(0xFF1A1A1A);
+    const Color surfaceColor = Color(0xFF2A2A2A);
+
     return Container(
       margin: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primaryGold.withOpacity(0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black26,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: primaryGold.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -481,19 +555,33 @@ class _MapScreenState extends State<MapScreen> {
         controller: _searchController,
         focusNode: _searchFocusNode,
         onChanged: _onSearchChanged,
+        style: const TextStyle(color: Colors.white, letterSpacing: 0.5),
         decoration: InputDecoration(
           hintText: 'Search for a location...',
-          prefixIcon: const Icon(Icons.search),
+          hintStyle: TextStyle(
+            color: Colors.white.withOpacity(0.6),
+            letterSpacing: 0.5,
+          ),
+          prefixIcon: Icon(Icons.search, color: primaryGold, size: 22),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear),
+                  icon: Icon(Icons.clear, color: primaryGold),
                   onPressed: _clearSearch,
                 )
               : null,
-          border: InputBorder.none,
+          filled: true,
+          fillColor: surfaceColor,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: primaryGold, width: 2),
+          ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: 12,
+            vertical: 14,
           ),
         ),
       ),
@@ -503,58 +591,132 @@ class _MapScreenState extends State<MapScreen> {
   Widget _buildSearchResults() {
     if (!_showSearchResults) return const SizedBox.shrink();
 
+    const Color primaryGold = Color(0xFFFFD700);
+    const Color cardBackground = Color(0xFF1A1A1A);
+    const Color surfaceColor = Color(0xFF2A2A2A);
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8.0),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primaryGold.withOpacity(0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black26,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: primaryGold.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       constraints: const BoxConstraints(maxHeight: 300),
       child: _isSearching
-          ? const Padding(
-              padding: EdgeInsets.all(16.0),
+          ? Padding(
+              padding: const EdgeInsets.all(20.0),
               child: Row(
                 children: [
                   SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(primaryGold),
+                    ),
                   ),
-                  SizedBox(width: 12),
-                  Text('Searching...'),
+                  const SizedBox(width: 16),
+                  Text(
+                    'Searching...',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
                 ],
               ),
             )
           : _searchResults.isEmpty
-          ? const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text('No results found'),
+          ? Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.search_off,
+                    color: primaryGold.withOpacity(0.7),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'No results found',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
             )
           : ListView.builder(
               shrinkWrap: true,
               itemCount: _searchResults.length,
               itemBuilder: (context, index) {
                 final result = _searchResults[index];
-                return ListTile(
-                  leading: const Icon(Icons.location_on, color: Colors.blue),
-                  title: Text(
-                    result.displayName,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
+                return Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
                   ),
-                  subtitle: Text(
-                    result.address,
-                    style: const TextStyle(fontSize: 12),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  decoration: BoxDecoration(
+                    color: surfaceColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: primaryGold.withOpacity(0.1),
+                      width: 1,
+                    ),
                   ),
-                  onTap: () => _selectSearchResult(result),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: primaryGold.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.location_on,
+                        color: primaryGold,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      result.displayName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    subtitle: Text(
+                      result.address,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.7),
+                        letterSpacing: 0.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios,
+                      color: primaryGold.withOpacity(0.7),
+                      size: 16,
+                    ),
+                    onTap: () => _selectSearchResult(result),
+                  ),
                 );
               },
             ),
@@ -676,85 +838,416 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           if (selectedLocation != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A1A),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFFFFD700).withOpacity(0.3),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD700).withOpacity(0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
               child: Column(
                 children: [
-                  // Distance display
+                  // Always show distance
                   if (currentLocation != null && selectedLocation != null)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(16.0),
                       margin: const EdgeInsets.only(bottom: 8.0),
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue.shade200),
-                      ),
-                      child: Text(
-                        'Distance to alarm location: ${_calculateDistanceToSelected()?.toStringAsFixed(1) ?? "Unknown"} meters',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.blue.shade700,
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF1A237E).withOpacity(0.8),
+                            const Color(0xFF3949AB).withOpacity(0.6),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        textAlign: TextAlign.center,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withOpacity(0.4),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFD700).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.straighten,
+                              color: Color(0xFFFFD700),
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Distance: ${_calculateDistanceToSelected()?.toStringAsFixed(1) ?? "Unknown"} meters',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFFFD700),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  Row(
-                    children: [
-                      const Text("Radius (m): "),
-                      Expanded(
-                        child: Slider(
-                          value: radius.toDouble(),
-                          min: 500,
-                          max: 5000,
-                          divisions: 9,
-                          label: "$radius m",
-                          onChanged: (v) => setState(() => radius = v.toInt()),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton(
-                        onPressed: pickMP3,
-                        child: Text(
-                          mp3Path == null ? "Pick MP3" : "MP3 Selected",
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          try {
-                            final alarm = AlarmModel(
-                              destLat: selectedLocation!.latitude,
-                              destLng: selectedLocation!.longitude,
-                              radiusM: radius,
-                              soundPath: mp3Path,
-                              createdAt: DateTime.now().millisecondsSinceEpoch,
-                            );
-                            await _repo.addAlarm(alarm);
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Alarm saved!")),
-                              );
-                            }
-                          } catch (e) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Error saving alarm: $e"),
-                                ),
-                              );
-                            }
-                          }
+                  // If panel is collapsed, show expand button
+                  if (!_isPanelExpanded)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _isPanelExpanded = true;
+                            _alarmJustSaved = false;
+                          });
                         },
-                        child: const Text("Save Alarm"),
+                        icon: const Icon(
+                          Icons.expand_more,
+                          color: Color(0xFFFFD700),
+                        ),
+                        label: const Text(
+                          "Expand",
+                          style: TextStyle(
+                            color: Color(0xFFFFD700),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  // If expanded, show full controls
+                  if (_isPanelExpanded)
+                    Column(
+                      children: [
+                        // Custom radius input
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2A2A2A),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFFFD700).withOpacity(0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.radio_button_checked,
+                                    color: Color(0xFFFFD700),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "Alarm Radius: $radius m",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFFFFD700),
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _radiusController,
+                                      keyboardType: TextInputType.number,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                      decoration: InputDecoration(
+                                        labelText: "Custom radius (m)",
+                                        labelStyle: const TextStyle(
+                                          color: Color(0xFFFFD700),
+                                        ),
+                                        hintText: "Enter radius (min 100)",
+                                        hintStyle: TextStyle(
+                                          color: Colors.white.withOpacity(0.6),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: BorderSide(
+                                            color: Color(
+                                              0xFFFFD700,
+                                            ).withOpacity(0.3),
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Color(0xFFFFD700),
+                                            width: 2,
+                                          ),
+                                        ),
+                                        fillColor: const Color(0xFF1A1A1A),
+                                        filled: true,
+                                      ),
+                                      onChanged: (value) {
+                                        final parsed = int.tryParse(value);
+                                        if (parsed != null && parsed >= 100) {
+                                          setState(() => radius = parsed);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      final parsed = int.tryParse(
+                                        _radiusController.text,
+                                      );
+                                      if (parsed == null || parsed < 100) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Radius must be at least 100 meters!",
+                                            ),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      setState(() => radius = parsed);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Color(0xFFFFD700),
+                                      foregroundColor: Color(0xFF1A237E),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: const Text("Set"),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  activeTrackColor: const Color(0xFFFFD700),
+                                  inactiveTrackColor: const Color(
+                                    0xFF1A237E,
+                                  ).withOpacity(0.3),
+                                  thumbColor: const Color(0xFFFFD700),
+                                  overlayColor: const Color(
+                                    0xFFFFD700,
+                                  ).withOpacity(0.2),
+                                  valueIndicatorColor: const Color(0xFF1A237E),
+                                  valueIndicatorTextStyle: const TextStyle(
+                                    color: Color(0xFFFFD700),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                child: Slider(
+                                  value: radius.toDouble(),
+                                  min: 100,
+                                  max: 5000,
+                                  divisions: 49,
+                                  label: "$radius m",
+                                  onChanged: (v) =>
+                                      setState(() => radius = v.toInt()),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Action buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0xFFFFD700),
+                                      const Color(0xFFFFA500),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(
+                                        0xFFFFD700,
+                                      ).withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton.icon(
+                                  onPressed: pickMP3,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  icon: Icon(
+                                    mp3Path == null
+                                        ? Icons.audiotrack
+                                        : Icons.check_circle,
+                                    color: const Color(0xFF1A237E),
+                                    size: 20,
+                                  ),
+                                  label: Text(
+                                    mp3Path == null
+                                        ? "Pick Audio"
+                                        : "Audio Selected",
+                                    style: const TextStyle(
+                                      color: Color(0xFF1A237E),
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Container(
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0xFF1A237E),
+                                      const Color(0xFF3949AB),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(
+                                        0xFF1A237E,
+                                      ).withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton.icon(
+                                  onPressed: () async {
+                                    if (radius < 100) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            "Radius must be at least 100 meters!",
+                                          ),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    try {
+                                      final alarm = AlarmModel(
+                                        destLat: selectedLocation!.latitude,
+                                        destLng: selectedLocation!.longitude,
+                                        radiusM: radius,
+                                        soundPath: mp3Path,
+                                        createdAt: DateTime.now()
+                                            .millisecondsSinceEpoch,
+                                      );
+                                      await _repo.addAlarm(alarm);
+                                      if (mounted) {
+                                        setState(() {
+                                          _isPanelExpanded = false;
+                                          _alarmJustSaved = true;
+                                          _radiusController.clear();
+                                        });
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text("Alarm saved!"),
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              "Error saving alarm: $e",
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  icon: const Icon(
+                                    Icons.save,
+                                    color: Color(0xFFFFD700),
+                                    size: 20,
+                                  ),
+                                  label: const Text(
+                                    "Save Alarm",
+                                    style: TextStyle(
+                                      color: Color(0xFFFFD700),
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -763,10 +1256,18 @@ class _MapScreenState extends State<MapScreen> {
       floatingActionButton: AudioService.instance.isPlaying
           ? FloatingActionButton.extended(
               onPressed: _stopAlarm,
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              icon: const Icon(Icons.stop),
-              label: const Text('STOP ALARM'),
+              backgroundColor: Colors.red.shade700,
+              foregroundColor: const Color(0xFFFFD700),
+              elevation: 12,
+              icon: const Icon(Icons.stop, size: 24),
+              label: const Text(
+                'STOP ALARM',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                  fontSize: 16,
+                ),
+              ),
             )
           : null,
     );

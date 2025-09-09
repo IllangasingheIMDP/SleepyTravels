@@ -31,21 +31,59 @@ class _LogsScreenState extends State<LogsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryGold = Color(0xFFFFD700);
+    const Color cardBackground = Color(0xFF1A1A1A);
+    const Color navyBlue = Color(0xFF1A237E);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Triggered Logs"),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: primaryGold.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.history, color: primaryGold, size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              "Triggered Logs",
+              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
+            ),
+          ],
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              _repo.reload(); // Reload the data
-            },
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: navyBlue.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: primaryGold.withOpacity(0.3), width: 1),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.refresh, color: primaryGold),
+              onPressed: () {
+                _repo.reload(); // Reload the data
+              },
+              tooltip: "Refresh",
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.clear_all),
-            onPressed: () {
-              _clearAllLogs();
-            },
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.red.shade700.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: primaryGold.withOpacity(0.3), width: 1),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.clear_all, color: primaryGold),
+              onPressed: () {
+                _clearAllLogs();
+              },
+              tooltip: "Clear All",
+            ),
           ),
         ],
       ),
@@ -53,7 +91,30 @@ class _LogsScreenState extends State<LogsScreen> {
         listenable: _repo,
         builder: (context, child) {
           if (_isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      valueColor: AlwaysStoppedAnimation<Color>(primaryGold),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Loading logs...",
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 16,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           final logs = _repo.items;
@@ -62,25 +123,95 @@ class _LogsScreenState extends State<LogsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.history, size: 64, color: Colors.grey),
-                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: cardBackground,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: primaryGold.withOpacity(0.3),
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primaryGold.withOpacity(0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.history,
+                      size: 64,
+                      color: primaryGold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   const Text(
                     "No alarm logs available",
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.8,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     "Logs will appear here when alarms are triggered",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.7),
+                      letterSpacing: 0.5,
+                    ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      _addTestLog(); // Add a test log for demonstration
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text("Add Test Log"),
+                  const SizedBox(height: 20),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [primaryGold, const Color(0xFFFFA500)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primaryGold.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        _addTestLog(); // Add a test log for demonstration
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                      ),
+                      icon: const Icon(
+                        Icons.add,
+                        color: Color(0xFF1A237E),
+                        size: 20,
+                      ),
+                      label: const Text(
+                        "Add Test Log",
+                        style: TextStyle(
+                          color: Color(0xFF1A237E),
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -88,34 +219,110 @@ class _LogsScreenState extends State<LogsScreen> {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(12.0),
             itemCount: logs.length,
             itemBuilder: (context, index) {
               final log = logs[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 4.0),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.orange,
-                    child: const Icon(Icons.alarm, color: Colors.white),
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 6.0),
+                decoration: BoxDecoration(
+                  color: cardBackground,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: primaryGold.withOpacity(0.3),
+                    width: 1,
                   ),
-                  title: Text(
-                    "Alarm Triggered",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryGold.withOpacity(0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
                     children: [
-                      Text("Time: ${_formatDate(log.triggeredAt)}"),
-                      Text(
-                        "Location: ${log.lat.toStringAsFixed(6)}, ${log.lng.toStringAsFixed(6)}",
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.orange.shade700,
+                              Colors.orange.shade500,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.orange.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.alarm,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
-                      if (log.alarmId != null) Text("Alarm ID: ${log.alarmId}"),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Alarm Triggered",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: primaryGold,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            _buildLogDetail(
+                              Icons.access_time,
+                              "Time: ${_formatDate(log.triggeredAt)}",
+                            ),
+                            const SizedBox(height: 4),
+                            _buildLogDetail(
+                              Icons.location_on,
+                              "Location: ${log.lat.toStringAsFixed(6)}, ${log.lng.toStringAsFixed(6)}",
+                            ),
+                            if (log.alarmId != null) ...[
+                              const SizedBox(height: 4),
+                              _buildLogDetail(
+                                Icons.label,
+                                "Alarm ID: ${log.alarmId}",
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade700,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.red.withOpacity(0.3),
+                              blurRadius: 6,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.white),
+                          onPressed: () => _deleteLog(log),
+                          tooltip: "Delete Log",
+                        ),
+                      ),
                     ],
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _deleteLog(log),
                   ),
                 ),
               );
@@ -123,6 +330,27 @@ class _LogsScreenState extends State<LogsScreen> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildLogDetail(IconData icon, String text) {
+    const Color primaryGold = Color(0xFFFFD700);
+
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: primaryGold.withOpacity(0.7)),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white.withOpacity(0.8),
+              letterSpacing: 0.3,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

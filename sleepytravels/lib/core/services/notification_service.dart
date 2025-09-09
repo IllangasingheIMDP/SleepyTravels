@@ -99,8 +99,8 @@ class NotificationService {
         priority: Priority.high,
         playSound: false, // We handle custom sound via AudioService
         enableVibration: true,
-        autoCancel: false, // Don't auto-dismiss
-        ongoing: true, // Make it persistent until user dismisses
+        autoCancel: true, // Don't auto-dismiss
+        ongoing: false, // Make it persistent until user dismisses
         showWhen: true,
         icon: '@mipmap/ic_launcher',
       );
