@@ -442,7 +442,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Alarm deleted"),
-            backgroundColor: Colors.red,
+            backgroundColor: Color.fromARGB(255, 0, 35, 73),
           ),
         );
       }

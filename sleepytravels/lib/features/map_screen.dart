@@ -173,53 +173,62 @@ class _MapScreenState extends State<MapScreen> {
     _searchFocusNode.unfocus();
   }
 
-  void _showDebugInfo() async {
-    final alarms = await _repo.getActiveAlarmsFromDB();
-    if (!mounted) return;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Debug Info'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Current Location: ${currentLocation?.latitude.toStringAsFixed(6)}, ${currentLocation?.longitude.toStringAsFixed(6)}',
-              ),
-              Text(
-                'Selected Location: ${selectedLocation?.latitude.toStringAsFixed(6)}, ${selectedLocation?.longitude.toStringAsFixed(6)}',
-              ),
-              if (currentLocation != null && selectedLocation != null)
-                Text(
-                  'Distance: ${_calculateDistanceToSelected()?.toStringAsFixed(2)} meters',
-                ),
-              const SizedBox(height: 10),
-              Text('Active Alarms: ${alarms.length}'),
-              ...alarms.map(
-                (alarm) => Padding(
-                  padding: const EdgeInsets.only(top: 5),
-                  child: Text(
-                    'Alarm ${alarm.id}: ${alarm.destLat.toStringAsFixed(6)}, ${alarm.destLng.toStringAsFixed(6)} (${alarm.radiusM}m)',
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text('Permission: $currentPermission'),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
+  String _formatRadius(int meters) {
+    if (meters >= 1000) {
+      double km = meters / 1000.0;
+      return '${km.toStringAsFixed(1)} km';
+    } else {
+      return '$meters m';
+    }
   }
+
+  // void _showDebugInfo() async {
+  //   final alarms = await _repo.getActiveAlarmsFromDB();
+  //   if (!mounted) return;
+
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Debug Info'),
+  //       content: SingleChildScrollView(
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             Text(
+  //               'Current Location: ${currentLocation?.latitude.toStringAsFixed(6)}, ${currentLocation?.longitude.toStringAsFixed(6)}',
+  //             ),
+  //             Text(
+  //               'Selected Location: ${selectedLocation?.latitude.toStringAsFixed(6)}, ${selectedLocation?.longitude.toStringAsFixed(6)}',
+  //             ),
+  //             if (currentLocation != null && selectedLocation != null)
+  //               Text(
+  //                 'Distance: ${_calculateDistanceToSelected()?.toStringAsFixed(2)} meters',
+  //               ),
+  //             const SizedBox(height: 10),
+  //             Text('Active Alarms: ${alarms.length}'),
+  //             ...alarms.map(
+  //               (alarm) => Padding(
+  //                 padding: const EdgeInsets.only(top: 5),
+  //                 child: Text(
+  //                   'Alarm ${alarm.id}: ${alarm.destLat.toStringAsFixed(6)}, ${alarm.destLng.toStringAsFixed(6)} (${_formatRadius(alarm.radiusM)})',
+  //                 ),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 10),
+  //             Text('Permission: $currentPermission'),
+  //           ],
+  //         ),
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text('Close'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   @override
   void dispose() {
@@ -749,11 +758,7 @@ class _MapScreenState extends State<MapScreen> {
               onPressed: _stopAlarm,
               tooltip: 'Stop Alarm',
             ),
-          IconButton(
-            icon: const Icon(Icons.bug_report),
-            onPressed: () => _showDebugInfo(),
-            tooltip: 'Debug Info',
-          ),
+          
           IconButton(
             icon: const Icon(Icons.my_location),
             onPressed: _centerOnCurrentLocation,
@@ -1028,7 +1033,7 @@ class _MapScreenState extends State<MapScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      "Alarm Radius: $radius m",
+                                      "Alarm Radius: ${_formatRadius(radius)}",
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
@@ -1151,7 +1156,7 @@ class _MapScreenState extends State<MapScreen> {
                                     min: 100,
                                     max: 5000,
                                     divisions: 49,
-                                    label: "$radius m",
+                                    label: _formatRadius(radius),
                                     onChanged: (v) =>
                                         setState(() => radius = v.toInt()),
                                   ),

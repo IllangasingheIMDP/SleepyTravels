@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'features/map_screen.dart';
 import 'core/services/monitor_service.dart';
@@ -5,18 +7,45 @@ import 'core/services/notification_service.dart';
 import 'core/services/db_service.dart';
 import 'core/services/permission_service.dart';
 import 'core/services/audio_service.dart';
+import 'core/services/logger_service.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await DBService.instance.init();
-  await NotificationService.instance.init();
-  await AudioService.instance.init();
+void main() {
+  runZonedGuarded<Future<void>>(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-  // Request location permissions with comprehensive handling
-  await PermissionService.instance.requestLocationPermission();
+      // Initialize services
+      await DBService.instance.init();
+      await NotificationService.instance.init();
+      await AudioService.instance.init();
 
-  MonitorService().startMonitoring();
-  runApp(const MyApp());
+      // Set up error handling
+      FlutterError.onError = (FlutterErrorDetails details) {
+        LoggerService.error(
+          'Flutter error occurred',
+          error: details.exception,
+          stackTrace: details.stack,
+        );
+      };
+
+      // Request location permissions
+      await PermissionService.instance.requestLocationPermission();
+
+      // Start background monitoring
+      MonitorService().startMonitoring();
+
+      LoggerService.info("Application started successfully.");
+
+      runApp(const MyApp());
+    },
+    (error, stack) {
+      LoggerService.error(
+        'Unhandled error in main',
+        error: error,
+        stackTrace: stack,
+      );
+    },
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -28,6 +57,8 @@ class MyApp extends StatelessWidget {
       title: 'SleepyTravels',
       theme: _buildPremiumDarkTheme(),
       home: const MapScreen(),
+      // Disable debug banner for production
+      debugShowCheckedModeBanner: false,
     );
   }
 
@@ -76,10 +107,10 @@ class MyApp extends StatelessWidget {
       cardTheme: CardThemeData(
         color: cardBackground,
         elevation: 8,
-        shadowColor: primaryGold.withValues(alpha: 0.3),
+        shadowColor: primaryGold.withAlpha(77),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: primaryGold.withValues(alpha: 0.2), width: 1),
+          side: BorderSide(color: primaryGold.withAlpha(51), width: 1),
         ),
       ),
 
@@ -89,7 +120,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: primaryGold,
           foregroundColor: darkNavy,
           elevation: 6,
-          shadowColor: primaryGold.withValues(alpha: 0.5),
+          shadowColor: primaryGold.withAlpha(128),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -157,18 +188,18 @@ class MyApp extends StatelessWidget {
         fillColor: surfaceColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: primaryGold.withValues(alpha: 0.3)),
+          borderSide: BorderSide(color: primaryGold.withAlpha(77)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: primaryGold.withValues(alpha: 0.3)),
+          borderSide: BorderSide(color: primaryGold.withAlpha(77)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: primaryGold, width: 2),
         ),
         labelStyle: const TextStyle(color: primaryGold),
-        hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+        hintStyle: TextStyle(color: Colors.white.withAlpha(153)),
         prefixIconColor: primaryGold,
         suffixIconColor: primaryGold,
       ),
@@ -186,7 +217,7 @@ class MyApp extends StatelessWidget {
         backgroundColor: cardBackground,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: primaryGold.withValues(alpha: 0.3), width: 1),
+          side: BorderSide(color: primaryGold.withAlpha(77), width: 1),
         ),
         titleTextStyle: const TextStyle(
           color: primaryGold,
