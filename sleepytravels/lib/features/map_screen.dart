@@ -182,53 +182,53 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  void _showDebugInfo() async {
-    final alarms = await _repo.getActiveAlarmsFromDB();
-    if (!mounted) return;
+  // void _showDebugInfo() async {
+  //   final alarms = await _repo.getActiveAlarmsFromDB();
+  //   if (!mounted) return;
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Debug Info'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Current Location: ${currentLocation?.latitude.toStringAsFixed(6)}, ${currentLocation?.longitude.toStringAsFixed(6)}',
-              ),
-              Text(
-                'Selected Location: ${selectedLocation?.latitude.toStringAsFixed(6)}, ${selectedLocation?.longitude.toStringAsFixed(6)}',
-              ),
-              if (currentLocation != null && selectedLocation != null)
-                Text(
-                  'Distance: ${_calculateDistanceToSelected()?.toStringAsFixed(2)} meters',
-                ),
-              const SizedBox(height: 10),
-              Text('Active Alarms: ${alarms.length}'),
-              ...alarms.map(
-                (alarm) => Padding(
-                  padding: const EdgeInsets.only(top: 5),
-                  child: Text(
-                    'Alarm ${alarm.id}: ${alarm.destLat.toStringAsFixed(6)}, ${alarm.destLng.toStringAsFixed(6)} (${_formatRadius(alarm.radiusM)})',
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text('Permission: $currentPermission'),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Debug Info'),
+  //       content: SingleChildScrollView(
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             Text(
+  //               'Current Location: ${currentLocation?.latitude.toStringAsFixed(6)}, ${currentLocation?.longitude.toStringAsFixed(6)}',
+  //             ),
+  //             Text(
+  //               'Selected Location: ${selectedLocation?.latitude.toStringAsFixed(6)}, ${selectedLocation?.longitude.toStringAsFixed(6)}',
+  //             ),
+  //             if (currentLocation != null && selectedLocation != null)
+  //               Text(
+  //                 'Distance: ${_calculateDistanceToSelected()?.toStringAsFixed(2)} meters',
+  //               ),
+  //             const SizedBox(height: 10),
+  //             Text('Active Alarms: ${alarms.length}'),
+  //             ...alarms.map(
+  //               (alarm) => Padding(
+  //                 padding: const EdgeInsets.only(top: 5),
+  //                 child: Text(
+  //                   'Alarm ${alarm.id}: ${alarm.destLat.toStringAsFixed(6)}, ${alarm.destLng.toStringAsFixed(6)} (${_formatRadius(alarm.radiusM)})',
+  //                 ),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 10),
+  //             Text('Permission: $currentPermission'),
+  //           ],
+  //         ),
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text('Close'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   @override
   void dispose() {
@@ -758,11 +758,7 @@ class _MapScreenState extends State<MapScreen> {
               onPressed: _stopAlarm,
               tooltip: 'Stop Alarm',
             ),
-          IconButton(
-            icon: const Icon(Icons.bug_report),
-            onPressed: () => _showDebugInfo(),
-            tooltip: 'Debug Info',
-          ),
+          
           IconButton(
             icon: const Icon(Icons.my_location),
             onPressed: _centerOnCurrentLocation,
