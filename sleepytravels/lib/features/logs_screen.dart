@@ -42,7 +42,7 @@ class _LogsScreenState extends State<LogsScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: primaryGold.withOpacity(0.2),
+                color: primaryGold.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.history, color: primaryGold, size: 20),
@@ -54,38 +54,7 @@ class _LogsScreenState extends State<LogsScreen> {
             ),
           ],
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: navyBlue.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: primaryGold.withOpacity(0.3), width: 1),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.refresh, color: primaryGold),
-              onPressed: () {
-                _repo.reload(); // Reload the data
-              },
-              tooltip: "Refresh",
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: Colors.red.shade700.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: primaryGold.withOpacity(0.3), width: 1),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.clear_all, color: primaryGold),
-              onPressed: () {
-                _clearAllLogs();
-              },
-              tooltip: "Clear All",
-            ),
-          ),
-        ],
+        
       ),
       body: ListenableBuilder(
         listenable: _repo,
@@ -107,7 +76,7 @@ class _LogsScreenState extends State<LogsScreen> {
                   Text(
                     "Loading logs...",
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 16,
                       letterSpacing: 0.5,
                     ),
@@ -129,12 +98,12 @@ class _LogsScreenState extends State<LogsScreen> {
                       color: cardBackground,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: primaryGold.withOpacity(0.3),
+                        color: primaryGold.withValues(alpha: 0.3),
                         width: 2,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryGold.withOpacity(0.1),
+                          color: primaryGold.withValues(alpha: 0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -161,7 +130,7 @@ class _LogsScreenState extends State<LogsScreen> {
                     "Logs will appear here when alarms are triggered",
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       letterSpacing: 0.5,
                     ),
                     textAlign: TextAlign.center,
@@ -177,7 +146,7 @@ class _LogsScreenState extends State<LogsScreen> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryGold.withOpacity(0.3),
+                          color: primaryGold.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -229,12 +198,12 @@ class _LogsScreenState extends State<LogsScreen> {
                   color: cardBackground,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: primaryGold.withOpacity(0.3),
+                    color: primaryGold.withValues(alpha: 0.3),
                     width: 1,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryGold.withOpacity(0.1),
+                      color: primaryGold.withValues(alpha: 0.1),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -258,7 +227,7 @@ class _LogsScreenState extends State<LogsScreen> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.orange.withOpacity(0.3),
+                              color: Colors.orange.withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 3),
                             ),
@@ -310,7 +279,7 @@ class _LogsScreenState extends State<LogsScreen> {
                           borderRadius: BorderRadius.circular(10),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.red.withOpacity(0.3),
+                              color: Colors.red.withValues(alpha: 0.3),
                               blurRadius: 6,
                               offset: const Offset(0, 3),
                             ),
@@ -338,14 +307,14 @@ class _LogsScreenState extends State<LogsScreen> {
 
     return Row(
       children: [
-        Icon(icon, size: 14, color: primaryGold.withOpacity(0.7)),
+        Icon(icon, size: 14, color: primaryGold.withValues(alpha: 0.7)),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               letterSpacing: 0.3,
             ),
           ),
@@ -452,7 +421,7 @@ class _LogsScreenState extends State<LogsScreen> {
           );
         }
       } catch (e) {
-        print('Error clearing logs: $e');
+        // Log error without using print in production
         if (mounted) {
           ScaffoldMessenger.of(
             context,

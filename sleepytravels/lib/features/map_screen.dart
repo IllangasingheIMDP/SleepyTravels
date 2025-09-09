@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
+import 'dart:developer' as developer;
 import '../data/repositories/alarm_repository.dart';
 import '../data/models/alarm_model.dart';
 import '../core/services/permission_service.dart';
@@ -30,7 +31,6 @@ class _MapScreenState extends State<MapScreen> {
   int radius = 2000;
   final TextEditingController _radiusController = TextEditingController();
   bool _isPanelExpanded = true;
-  bool _alarmJustSaved = false;
   String? mp3Path;
   LocationPermission? currentPermission;
   final MapController _mapController = MapController();
@@ -86,7 +86,7 @@ class _MapScreenState extends State<MapScreen> {
 
   void _onAudioStateChanged() {
     // Update UI when audio playing state changes
-    print(
+    developer.log(
       'MapScreen: Audio playing state changed: ${AudioService.instance.isPlaying}',
     );
     if (mounted) {
@@ -132,7 +132,7 @@ class _MapScreenState extends State<MapScreen> {
         });
       }
     } catch (e) {
-      print('Error searching location: $e');
+      developer.log('Error searching location: $e');
       if (mounted) {
         setState(() {
           _searchResults = [];
@@ -254,7 +254,10 @@ class _MapScreenState extends State<MapScreen> {
           .getCurrentPermission();
       if (PermissionService.instance.hasLocationPermission(permission)) {
         final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 10,
+          ),
         );
         if (mounted) {
           setState(() {
@@ -269,7 +272,7 @@ class _MapScreenState extends State<MapScreen> {
         }
       }
     } catch (e) {
-      print('Error getting current location: $e');
+      developer.log('Error getting current location: $e');
     }
   }
 
@@ -292,10 +295,10 @@ class _MapScreenState extends State<MapScreen> {
       decoration: BoxDecoration(
         color: cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primaryGold.withOpacity(0.3), width: 1),
+        border: Border.all(color: primaryGold.withValues(alpha: 0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: primaryGold.withOpacity(0.2),
+            color: primaryGold.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -317,7 +320,7 @@ class _MapScreenState extends State<MapScreen> {
                   border: Border.all(color: navyBlue, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryGold.withOpacity(0.5),
+                      color: primaryGold.withValues(alpha: 0.5),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -353,7 +356,7 @@ class _MapScreenState extends State<MapScreen> {
                     border: Border.all(color: primaryGold, width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.red.withOpacity(0.5),
+                        color: Colors.red.withValues(alpha: 0.5),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
@@ -401,11 +404,11 @@ class _MapScreenState extends State<MapScreen> {
         );
       }
 
-      print(
+      developer.log(
         'MapScreen: Stopped alarm and deactivated ${activeAlarms.length} alarms',
       );
     } catch (e) {
-      print('Error stopping alarm: $e');
+      developer.log('Error stopping alarm: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -433,7 +436,7 @@ class _MapScreenState extends State<MapScreen> {
 
         if (permanentPath != null) {
           setState(() => mp3Path = permanentPath);
-          print(
+          developer.log(
             'AudioFile: Successfully saved $originalName to permanent location',
           );
         } else {
@@ -441,7 +444,7 @@ class _MapScreenState extends State<MapScreen> {
         }
       }
     } catch (e) {
-      print('Error picking MP3 file: $e');
+      developer.log('Error picking MP3 file: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error selecting audio file: $e')),
@@ -493,11 +496,11 @@ class _MapScreenState extends State<MapScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color, color.withOpacity(0.8)],
+          colors: [color, color.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: primaryGold.withOpacity(0.3), width: 1),
+        border: Border.all(color: primaryGold.withValues(alpha: 0.3), width: 1),
       ),
       child: InkWell(
         onTap: onTap,
@@ -506,7 +509,7 @@ class _MapScreenState extends State<MapScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: primaryGold.withOpacity(0.2),
+                color: primaryGold.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: primaryGold, size: 20),
@@ -526,7 +529,7 @@ class _MapScreenState extends State<MapScreen> {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: primaryGold.withOpacity(0.2),
+                  color: primaryGold.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Icon(
@@ -551,10 +554,10 @@ class _MapScreenState extends State<MapScreen> {
       decoration: BoxDecoration(
         color: cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primaryGold.withOpacity(0.3), width: 1),
+        border: Border.all(color: primaryGold.withValues(alpha: 0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: primaryGold.withOpacity(0.2),
+            color: primaryGold.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -568,7 +571,7 @@ class _MapScreenState extends State<MapScreen> {
         decoration: InputDecoration(
           hintText: 'Search for a location...',
           hintStyle: TextStyle(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             letterSpacing: 0.5,
           ),
           prefixIcon: Icon(Icons.search, color: primaryGold, size: 22),
@@ -609,10 +612,10 @@ class _MapScreenState extends State<MapScreen> {
       decoration: BoxDecoration(
         color: cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primaryGold.withOpacity(0.3), width: 1),
+        border: Border.all(color: primaryGold.withValues(alpha: 0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: primaryGold.withOpacity(0.2),
+            color: primaryGold.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -651,14 +654,14 @@ class _MapScreenState extends State<MapScreen> {
                 children: [
                   Icon(
                     Icons.search_off,
-                    color: primaryGold.withOpacity(0.7),
+                    color: primaryGold.withValues(alpha: 0.7),
                     size: 20,
                   ),
                   const SizedBox(width: 12),
                   Text(
                     'No results found',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontWeight: FontWeight.w500,
                       letterSpacing: 0.5,
                     ),
@@ -680,7 +683,7 @@ class _MapScreenState extends State<MapScreen> {
                     color: surfaceColor,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: primaryGold.withOpacity(0.1),
+                      color: primaryGold.withValues(alpha: 0.1),
                       width: 1,
                     ),
                   ),
@@ -692,7 +695,7 @@ class _MapScreenState extends State<MapScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: primaryGold.withOpacity(0.2),
+                        color: primaryGold.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
@@ -713,7 +716,7 @@ class _MapScreenState extends State<MapScreen> {
                       result.address,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         letterSpacing: 0.3,
                       ),
                       maxLines: 2,
@@ -721,7 +724,7 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                     trailing: Icon(
                       Icons.arrow_forward_ios,
-                      color: primaryGold.withOpacity(0.7),
+                      color: primaryGold.withValues(alpha: 0.7),
                       size: 16,
                     ),
                     onTap: () => _selectSearchResult(result),
@@ -806,7 +809,9 @@ class _MapScreenState extends State<MapScreen> {
                             point: selectedLocation!,
                             radius: radius.toDouble(),
                             useRadiusInMeter: true,
-                            color: const Color(0xFFFFD700).withOpacity(0.2),
+                            color: const Color(
+                              0xFFFFD700,
+                            ).withValues(alpha: 0.2),
                             borderColor: const Color(0xFFFFD700),
                             borderStrokeWidth: 2,
                           ),
@@ -873,12 +878,12 @@ class _MapScreenState extends State<MapScreen> {
                 color: const Color(0xFF1A1A1A),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: const Color(0xFFFFD700).withOpacity(0.3),
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.3),
                   width: 2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFFD700).withOpacity(0.2),
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.2),
                     blurRadius: 20,
                     offset: const Offset(0, -4),
                   ),
@@ -895,15 +900,15 @@ class _MapScreenState extends State<MapScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF1A237E).withOpacity(0.8),
-                            const Color(0xFF3949AB).withOpacity(0.6),
+                            const Color(0xFF1A237E).withValues(alpha: 0.8),
+                            const Color(0xFF3949AB).withValues(alpha: 0.6),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: const Color(0xFFFFD700).withOpacity(0.4),
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.4),
                           width: 1,
                         ),
                       ),
@@ -912,7 +917,9 @@ class _MapScreenState extends State<MapScreen> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFD700).withOpacity(0.2),
+                              color: const Color(
+                                0xFFFFD700,
+                              ).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(
@@ -945,7 +952,6 @@ class _MapScreenState extends State<MapScreen> {
                         onPressed: () {
                           setState(() {
                             _isPanelExpanded = true;
-                            _alarmJustSaved = false;
                           });
                         },
                         icon: const Icon(
@@ -979,7 +985,6 @@ class _MapScreenState extends State<MapScreen> {
                             onPressed: () {
                               setState(() {
                                 _isPanelExpanded = false;
-                                _alarmJustSaved = false;
                               });
                             },
                             icon: const Icon(
@@ -1009,7 +1014,9 @@ class _MapScreenState extends State<MapScreen> {
                             color: const Color(0xFF2A2A2A),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: const Color(0xFFFFD700).withOpacity(0.2),
+                              color: const Color(
+                                0xFFFFD700,
+                              ).withValues(alpha: 0.2),
                               width: 1,
                             ),
                           ),
@@ -1052,7 +1059,9 @@ class _MapScreenState extends State<MapScreen> {
                                         ),
                                         hintText: "Enter radius (min 100)",
                                         hintStyle: TextStyle(
-                                          color: Colors.white.withOpacity(0.6),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.6,
+                                          ),
                                         ),
                                         enabledBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(
@@ -1061,7 +1070,7 @@ class _MapScreenState extends State<MapScreen> {
                                           borderSide: BorderSide(
                                             color: Color(
                                               0xFFFFD700,
-                                            ).withOpacity(0.3),
+                                            ).withValues(alpha: 0.3),
                                           ),
                                         ),
                                         focusedBorder: OutlineInputBorder(
@@ -1122,11 +1131,11 @@ class _MapScreenState extends State<MapScreen> {
                                   activeTrackColor: const Color(0xFFFFD700),
                                   inactiveTrackColor: const Color(
                                     0xFF1A237E,
-                                  ).withOpacity(0.3),
+                                  ).withValues(alpha: 0.3),
                                   thumbColor: const Color(0xFFFFD700),
                                   overlayColor: const Color(
                                     0xFFFFD700,
-                                  ).withOpacity(0.2),
+                                  ).withValues(alpha: 0.2),
                                   valueIndicatorColor: const Color(0xFF1A237E),
                                   valueIndicatorTextStyle: const TextStyle(
                                     color: Color(0xFFFFD700),
@@ -1167,7 +1176,7 @@ class _MapScreenState extends State<MapScreen> {
                                     BoxShadow(
                                       color: const Color(
                                         0xFFFFD700,
-                                      ).withOpacity(0.3),
+                                      ).withValues(alpha: 0.3),
                                       blurRadius: 8,
                                       offset: const Offset(0, 4),
                                     ),
@@ -1218,7 +1227,7 @@ class _MapScreenState extends State<MapScreen> {
                                     BoxShadow(
                                       color: const Color(
                                         0xFF1A237E,
-                                      ).withOpacity(0.3),
+                                      ).withValues(alpha: 0.3),
                                       blurRadius: 8,
                                       offset: const Offset(0, 4),
                                     ),
@@ -1239,6 +1248,9 @@ class _MapScreenState extends State<MapScreen> {
                                       );
                                       return;
                                     }
+                                    final messenger = ScaffoldMessenger.of(
+                                      context,
+                                    );
                                     try {
                                       final alarm = AlarmModel(
                                         destLat: selectedLocation!.latitude,
@@ -1252,12 +1264,9 @@ class _MapScreenState extends State<MapScreen> {
                                       if (mounted) {
                                         setState(() {
                                           _isPanelExpanded = false;
-                                          _alarmJustSaved = true;
                                           _radiusController.clear();
                                         });
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
+                                        messenger.showSnackBar(
                                           const SnackBar(
                                             content: Text("Alarm saved!"),
                                           ),
@@ -1265,9 +1274,7 @@ class _MapScreenState extends State<MapScreen> {
                                       }
                                     } catch (e) {
                                       if (mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
+                                        messenger.showSnackBar(
                                           SnackBar(
                                             content: Text(
                                               "Error saving alarm: $e",

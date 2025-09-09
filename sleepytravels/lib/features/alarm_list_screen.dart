@@ -32,7 +32,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: primaryGold.withOpacity(0.2),
+                color: primaryGold.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.alarm, color: primaryGold, size: 20),
@@ -60,12 +60,12 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                       color: cardBackground,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: primaryGold.withOpacity(0.3),
+                        color: primaryGold.withValues(alpha: 0.3),
                         width: 2,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryGold.withOpacity(0.1),
+                          color: primaryGold.withValues(alpha: 0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -92,7 +92,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                     "Create your first alarm from the map",
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -113,15 +113,15 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: alarm.active
-                        ? primaryGold.withOpacity(0.5)
-                        : primaryGold.withOpacity(0.2),
+                        ? primaryGold.withValues(alpha: 0.5)
+                        : primaryGold.withValues(alpha: 0.2),
                     width: alarm.active ? 2 : 1,
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: alarm.active
-                          ? primaryGold.withOpacity(0.3)
-                          : primaryGold.withOpacity(0.1),
+                          ? primaryGold.withValues(alpha: 0.3)
+                          : primaryGold.withValues(alpha: 0.1),
                       blurRadius: alarm.active ? 16 : 8,
                       offset: const Offset(0, 4),
                     ),
@@ -139,8 +139,8 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: alarm.active
-                                  ? primaryGold.withOpacity(0.2)
-                                  : Colors.grey.withOpacity(0.2),
+                                  ? primaryGold.withValues(alpha: 0.2)
+                                  : Colors.grey.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
@@ -163,10 +163,10 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                           ),
                           Container(
                             decoration: BoxDecoration(
-                              color: navyBlue.withOpacity(0.3),
+                              color: navyBlue.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: primaryGold.withOpacity(0.3),
+                                color: primaryGold.withValues(alpha: 0.3),
                                 width: 1,
                               ),
                             ),
@@ -193,7 +193,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                           color: const Color(0xFF2A2A2A),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: primaryGold.withOpacity(0.2),
+                            color: primaryGold.withValues(alpha: 0.2),
                             width: 1,
                           ),
                         ),
@@ -260,7 +260,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.red.withOpacity(0.3),
+                                  color: Colors.red.withValues(alpha: 0.3),
                                   blurRadius: 6,
                                   offset: const Offset(0, 3),
                                 ),
@@ -295,7 +295,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: primaryGold.withOpacity(0.2),
+            color: primaryGold.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: primaryGold, size: 16),
@@ -319,7 +319,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                 value,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   letterSpacing: 0.3,
                 ),
               ),
@@ -344,7 +344,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
