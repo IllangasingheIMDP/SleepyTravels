@@ -32,14 +32,13 @@ class MyApp extends StatelessWidget {
   }
 
   ThemeData _buildPremiumDarkTheme() {
-    const Color primaryGold = Color(0xFFFFD700);
-    const Color secondaryGold = Color(0xFFFFA500);
-    const Color navyBlue = Color(0xFF1A237E);
-    const Color darkNavy = Color(0xFF0D1B3C);
-    const Color lightNavy = Color(0xFF3949AB);
-    const Color darkBackground = Color(0xFF0A0A0A);
-    const Color cardBackground = Color(0xFF1A1A1A);
-    const Color surfaceColor = Color(0xFF2A2A2A);
+    const Color primaryGold = Color(0xFFF0CB46);
+    const Color secondaryGold = Color(0xFFCCA000);
+    const Color navyBlue = Color(0xFF003566);
+    const Color darkNavy = Color(0xFF001D3D);
+    const Color darkBackground = Color(0xFF000814);
+    const Color cardBackground = Color(0xFF001D3D);
+    const Color surfaceColor = Color(0xFF003566);
 
     return ThemeData(
       brightness: Brightness.dark,
@@ -56,7 +55,6 @@ class MyApp extends StatelessWidget {
         onSecondary: darkNavy,
         onSurface: Colors.white,
         tertiary: navyBlue,
-        outline: lightNavy,
       ),
 
       // AppBar theme

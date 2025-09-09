@@ -31,9 +31,8 @@ class _LogsScreenState extends State<LogsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryGold = Color(0xFFFFD700);
-    const Color cardBackground = Color(0xFF1A1A1A);
-    
+    const Color primaryGold = Color(0xFFF0CB46);
+    const Color cardBackground = Color(0xFF001D3D);
 
     return Scaffold(
       appBar: AppBar(
@@ -54,7 +53,6 @@ class _LogsScreenState extends State<LogsScreen> {
             ),
           ],
         ),
-        
       ),
       body: ListenableBuilder(
         listenable: _repo,
@@ -76,7 +74,7 @@ class _LogsScreenState extends State<LogsScreen> {
                   Text(
                     "Loading logs...",
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Colors.white.withOpacity(0.7),
                       fontSize: 16,
                       letterSpacing: 0.5,
                     ),
@@ -98,12 +96,12 @@ class _LogsScreenState extends State<LogsScreen> {
                       color: cardBackground,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: primaryGold.withValues(alpha: 0.3),
+                        color: primaryGold.withOpacity(0.3),
                         width: 2,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryGold.withValues(alpha: 0.1),
+                          color: primaryGold.withOpacity(0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -130,7 +128,7 @@ class _LogsScreenState extends State<LogsScreen> {
                     "Logs will appear here when alarms are triggered",
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Colors.white.withOpacity(0.7),
                       letterSpacing: 0.5,
                     ),
                     textAlign: TextAlign.center,
@@ -138,15 +136,15 @@ class _LogsScreenState extends State<LogsScreen> {
                   const SizedBox(height: 20),
                   Container(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [primaryGold, const Color(0xFFFFA500)],
+                      gradient: const LinearGradient(
+                        colors: [primaryGold, Color(0xFFCCA000)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryGold.withValues(alpha: 0.3),
+                          color: primaryGold.withOpacity(0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -169,13 +167,13 @@ class _LogsScreenState extends State<LogsScreen> {
                       ),
                       icon: const Icon(
                         Icons.add,
-                        color: Color(0xFF1A237E),
+                        color: Color(0xFF001D3D),
                         size: 20,
                       ),
                       label: const Text(
                         "Add Test Log",
                         style: TextStyle(
-                          color: Color(0xFF1A237E),
+                          color: Color(0xFF001D3D),
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.8,
                         ),
@@ -198,12 +196,12 @@ class _LogsScreenState extends State<LogsScreen> {
                   color: cardBackground,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: primaryGold.withValues(alpha: 0.3),
+                    color: primaryGold.withOpacity(0.3),
                     width: 1,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryGold.withValues(alpha: 0.1),
+                      color: primaryGold.withOpacity(0.1),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -216,18 +214,15 @@ class _LogsScreenState extends State<LogsScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.orange.shade700,
-                              Colors.orange.shade500,
-                            ],
+                          gradient: const LinearGradient(
+                            colors: [primaryGold, Color(0xFFCCA000)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.orange.withValues(alpha: 0.3),
+                              color: primaryGold.withOpacity(0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 3),
                             ),
@@ -235,7 +230,7 @@ class _LogsScreenState extends State<LogsScreen> {
                         ),
                         child: const Icon(
                           Icons.alarm,
-                          color: Colors.white,
+                          color: Color(0xFF001D3D),
                           size: 24,
                         ),
                       ),
@@ -303,18 +298,18 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   Widget _buildLogDetail(IconData icon, String text) {
-    const Color primaryGold = Color(0xFFFFD700);
+    const Color primaryGold = Color(0xFFF0CB46);
 
     return Row(
       children: [
-        Icon(icon, size: 14, color: primaryGold.withValues(alpha: 0.7)),
+        Icon(icon, size: 14, color: primaryGold.withOpacity(0.7)),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.white.withValues(alpha: 0.8),
+              color: Colors.white.withOpacity(0.8),
               letterSpacing: 0.3,
             ),
           ),

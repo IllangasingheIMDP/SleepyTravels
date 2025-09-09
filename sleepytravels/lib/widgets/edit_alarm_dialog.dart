@@ -188,15 +188,17 @@ class _EditAlarmDialogState extends State<EditAlarmDialog> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
+                border: Border.all(
+                  color: const Color(0xFFF0CB46).withOpacity(0.3),
+                ),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 _getAudioFileName(_selectedSoundPath),
                 style: TextStyle(
                   color: _selectedSoundPath != null
-                      ? Colors.black
-                      : Colors.grey,
+                      ? Colors.white
+                      : Colors.white70,
                 ),
               ),
             ),

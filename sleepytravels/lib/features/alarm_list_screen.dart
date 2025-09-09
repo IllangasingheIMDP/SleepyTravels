@@ -21,9 +21,9 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryGold = Color(0xFFFFD700);
-    const Color cardBackground = Color(0xFF1A1A1A);
-    const Color navyBlue = Color(0xFF1A237E);
+    const Color primaryGold = Color(0xFFF0CB46);
+    const Color cardBackground = Color(0xFF001D3D);
+    const Color navyBlue = Color(0xFF003566);
 
     return Scaffold(
       appBar: AppBar(
@@ -32,7 +32,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: primaryGold.withValues(alpha: 0.2),
+                color: primaryGold.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.alarm, color: primaryGold, size: 20),
@@ -60,12 +60,12 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                       color: cardBackground,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: primaryGold.withValues(alpha: 0.3),
+                        color: primaryGold.withOpacity(0.3),
                         width: 2,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryGold.withValues(alpha: 0.1),
+                          color: primaryGold.withOpacity(0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -92,7 +92,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                     "Create your first alarm from the map",
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Colors.white.withOpacity(0.7),
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -113,15 +113,15 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: alarm.active
-                        ? primaryGold.withValues(alpha: 0.5)
-                        : primaryGold.withValues(alpha: 0.2),
+                        ? primaryGold.withOpacity(0.5)
+                        : primaryGold.withOpacity(0.2),
                     width: alarm.active ? 2 : 1,
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: alarm.active
-                          ? primaryGold.withValues(alpha: 0.3)
-                          : primaryGold.withValues(alpha: 0.1),
+                          ? primaryGold.withOpacity(0.3)
+                          : primaryGold.withOpacity(0.1),
                       blurRadius: alarm.active ? 16 : 8,
                       offset: const Offset(0, 4),
                     ),
@@ -139,13 +139,15 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: alarm.active
-                                  ? primaryGold.withValues(alpha: 0.2)
-                                  : Colors.grey.withValues(alpha: 0.2),
+                                  ? primaryGold.withOpacity(0.2)
+                                  : Colors.white.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
                               alarm.active ? Icons.alarm_on : Icons.alarm_off,
-                              color: alarm.active ? primaryGold : Colors.grey,
+                              color: alarm.active
+                                  ? primaryGold
+                                  : Colors.white.withOpacity(0.7),
                               size: 20,
                             ),
                           ),
@@ -156,17 +158,19 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: alarm.active ? primaryGold : Colors.grey,
+                                color: alarm.active
+                                    ? primaryGold
+                                    : Colors.white.withOpacity(0.7),
                                 letterSpacing: 0.8,
                               ),
                             ),
                           ),
                           Container(
                             decoration: BoxDecoration(
-                              color: navyBlue.withValues(alpha: 0.3),
+                              color: navyBlue.withOpacity(0.3),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: primaryGold.withValues(alpha: 0.3),
+                                color: primaryGold.withOpacity(0.3),
                                 width: 1,
                               ),
                             ),
@@ -190,10 +194,10 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2A2A2A),
+                          color: navyBlue,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: primaryGold.withValues(alpha: 0.2),
+                            color: primaryGold.withOpacity(0.2),
                             width: 1,
                           ),
                         ),
@@ -249,8 +253,8 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                               onPressed: () => _editAlarm(alarm),
                               icon: Icons.edit,
                               label: "Edit",
-                              color: Colors.orange.shade700,
-                              textColor: Colors.white,
+                              color: const Color(0xFFCCA000),
+                              textColor: const Color(0xFF001D3D),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -260,7 +264,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.red.withValues(alpha: 0.3),
+                                  color: Colors.red.withOpacity(0.3),
                                   blurRadius: 6,
                                   offset: const Offset(0, 3),
                                 ),
@@ -287,7 +291,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
-    const Color primaryGold = Color(0xFFFFD700);
+    const Color primaryGold = Color(0xFFF0CB46);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,7 +299,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: primaryGold.withValues(alpha: 0.2),
+            color: primaryGold.withOpacity(0.2),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: primaryGold, size: 16),
@@ -319,7 +323,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                 value,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: Colors.white.withOpacity(0.9),
                   letterSpacing: 0.3,
                 ),
               ),
@@ -344,7 +348,7 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.3),
+            color: color.withOpacity(0.3),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
