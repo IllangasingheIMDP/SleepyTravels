@@ -2,7 +2,7 @@
 # SleepyTravels
 
 <p align="center">
-  <img src="logo.png" alt="SleepyTravels Logo" width="200"/>
+ <img width="200" height="200" alt="logo" src="https://github.com/user-attachments/assets/e81c2f56-b47c-4083-a203-bd40346c89d4" />
 </p>
 
 <p align="center">
