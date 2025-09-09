@@ -1,6 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
-
+import 'dart:developer' as developer;
 class NotificationService {
   NotificationService._();
   static final NotificationService instance = NotificationService._();
@@ -9,7 +9,7 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
-    print('NotificationService: Initializing...');
+    developer.log('NotificationService: Initializing...');
 
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iOS = DarwinInitializationSettings();
@@ -17,7 +17,7 @@ class NotificationService {
     await _plugin.initialize(
       const InitializationSettings(android: android, iOS: iOS),
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        print('NotificationService: Notification tapped: ${response.payload}');
+        developer.log('NotificationService: Notification tapped: ${response.payload}');
       },
     );
 
@@ -27,7 +27,7 @@ class NotificationService {
     // Create notification channel
     await _createNotificationChannel();
 
-    print('NotificationService: Initialization complete');
+    developer.log('NotificationService: Initialization complete');
   }
 
   Future<void> _requestNotificationPermissions() async {
@@ -40,7 +40,7 @@ class NotificationService {
       if (androidImplementation != null) {
         final granted = await androidImplementation
             .requestNotificationsPermission();
-        print('NotificationService: Permission granted: $granted');
+        developer.log('NotificationService: Permission granted: $granted');
       }
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       final iosImplementation = _plugin
@@ -54,13 +54,14 @@ class NotificationService {
           badge: true,
           sound: true,
         );
-        print('NotificationService: iOS Permission granted: $granted');
+        developer.log('NotificationService: iOS Permission granted: $granted');
       }
     }
   }
 
   Future<void> _createNotificationChannel() async {
-    const androidChannel = AndroidNotificationChannel(
+    // Main alarm notification channel
+    const alarmChannel = AndroidNotificationChannel(
       'sleepytravels_alarm_channel',
       'SleepyTravels Alarm Alerts',
       description:
@@ -71,15 +72,44 @@ class NotificationService {
       showBadge: true,
     );
 
+    // Background service notification channel
+    const backgroundChannel = AndroidNotificationChannel(
+      'sleepy_travels_bg',
+      'SleepyTravels Background Service',
+      description: 'Background location monitoring for travel alarms',
+      importance: Importance.low,
+      playSound: false,
+      enableVibration: false,
+      showBadge: false,
+    );
+
     final androidImplementation = _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
 
     if (androidImplementation != null) {
-      await androidImplementation.createNotificationChannel(androidChannel);
-      print('NotificationService: Notification channel created');
+      await androidImplementation.createNotificationChannel(alarmChannel);
+      await androidImplementation.createNotificationChannel(backgroundChannel);
+      developer.log('NotificationService: Notification channels created');
     }
+  }
+
+  // Get background service notification details
+  static AndroidNotificationDetails getBackgroundNotificationDetails() {
+    return const AndroidNotificationDetails(
+      'sleepy_travels_bg',
+      'SleepyTravels Background Service',
+      channelDescription: 'Background location monitoring for travel alarms',
+      importance: Importance.low,
+      priority: Priority.low,
+      showWhen: false,
+      autoCancel: false,
+      ongoing: true,
+      playSound: false,
+      enableVibration: false,
+      icon: '@mipmap/ic_launcher',
+    );
   }
 
   Future<void> showNotification({
@@ -88,7 +118,7 @@ class NotificationService {
     int? id,
   }) async {
     try {
-      print('NotificationService: Attempting to show notification: $title');
+      developer.log('NotificationService: Attempting to show notification: $title');
 
       const androidDetails = AndroidNotificationDetails(
         'sleepytravels_alarm_channel',
@@ -99,8 +129,8 @@ class NotificationService {
         priority: Priority.high,
         playSound: false, // We handle custom sound via AudioService
         enableVibration: true,
-        autoCancel: false, // Don't auto-dismiss
-        ongoing: true, // Make it persistent until user dismisses
+        autoCancel: true, // Don't auto-dismiss
+        ongoing: false, // Make it persistent until user dismisses
         showWhen: true,
         icon: '@mipmap/ic_launcher',
       );
@@ -122,14 +152,14 @@ class NotificationService {
 
       await _plugin.show(notificationId, title, body, details);
 
-      print('NotificationService: Notification shown with ID: $notificationId');
+      developer.log('NotificationService: Notification shown with ID: $notificationId');
     } catch (e) {
-      print('NotificationService: Error showing notification: $e');
+      developer.log('NotificationService: Error showing notification: $e');
     }
   }
 
   Future<void> cancelAllNotifications() async {
     await _plugin.cancelAll();
-    print('NotificationService: All notifications cancelled');
+    developer.log('NotificationService: All notifications cancelled');
   }
 }
