@@ -52,11 +52,9 @@ class MyApp extends StatelessWidget {
         primary: primaryGold,
         secondary: secondaryGold,
         surface: cardBackground,
-        background: darkBackground,
         onPrimary: darkNavy,
         onSecondary: darkNavy,
         onSurface: Colors.white,
-        onBackground: Colors.white,
         tertiary: navyBlue,
         outline: lightNavy,
       ),
@@ -80,10 +78,10 @@ class MyApp extends StatelessWidget {
       cardTheme: CardThemeData(
         color: cardBackground,
         elevation: 8,
-        shadowColor: primaryGold.withOpacity(0.3),
+        shadowColor: primaryGold.withValues(alpha: 0.3),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: primaryGold.withOpacity(0.2), width: 1),
+          side: BorderSide(color: primaryGold.withValues(alpha: 0.2), width: 1),
         ),
       ),
 
@@ -93,7 +91,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: primaryGold,
           foregroundColor: darkNavy,
           elevation: 6,
-          shadowColor: primaryGold.withOpacity(0.5),
+          shadowColor: primaryGold.withValues(alpha: 0.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -117,14 +115,14 @@ class MyApp extends StatelessWidget {
 
       // Switch theme
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return primaryGold;
           }
           return Colors.grey[600];
         }),
-        trackColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return navyBlue;
           }
           return Colors.grey[800];
@@ -161,18 +159,18 @@ class MyApp extends StatelessWidget {
         fillColor: surfaceColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: primaryGold.withOpacity(0.3)),
+          borderSide: BorderSide(color: primaryGold.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: primaryGold.withOpacity(0.3)),
+          borderSide: BorderSide(color: primaryGold.withValues(alpha: 0.3)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: primaryGold, width: 2),
         ),
         labelStyle: const TextStyle(color: primaryGold),
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+        hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
         prefixIconColor: primaryGold,
         suffixIconColor: primaryGold,
       ),
@@ -190,7 +188,7 @@ class MyApp extends StatelessWidget {
         backgroundColor: cardBackground,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: primaryGold.withOpacity(0.3), width: 1),
+          side: BorderSide(color: primaryGold.withValues(alpha: 0.3), width: 1),
         ),
         titleTextStyle: const TextStyle(
           color: primaryGold,

@@ -77,7 +77,7 @@ class _EditAlarmDialogState extends State<EditAlarmDialog> {
         }
       }
     } catch (e) {
-      print('Error picking audio file: $e');
+      debugPrint('Error picking audio file: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -129,7 +129,7 @@ class _EditAlarmDialogState extends State<EditAlarmDialog> {
         );
       }
     } catch (e) {
-      print('Error updating alarm: $e');
+      debugPrint('Error updating alarm: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,

@@ -33,7 +33,7 @@ class _LogsScreenState extends State<LogsScreen> {
   Widget build(BuildContext context) {
     const Color primaryGold = Color(0xFFFFD700);
     const Color cardBackground = Color(0xFF1A1A1A);
-    const Color navyBlue = Color(0xFF1A237E);
+    
 
     return Scaffold(
       appBar: AppBar(
@@ -378,56 +378,56 @@ class _LogsScreenState extends State<LogsScreen> {
     }
   }
 
-  Future<void> _clearAllLogs() async {
-    if (_repo.items.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("No logs to clear")));
-      return;
-    }
+  // Future<void> _clearAllLogs() async {
+  //   if (_repo.items.isEmpty) {
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(const SnackBar(content: Text("No logs to clear")));
+  //     return;
+  //   }
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Clear All Logs"),
-        content: Text(
-          "Are you sure you want to delete all ${_repo.items.length} log entries?",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text("Clear All"),
-          ),
-        ],
-      ),
-    );
+  //   final confirmed = await showDialog<bool>(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text("Clear All Logs"),
+  //       content: Text(
+  //         "Are you sure you want to delete all ${_repo.items.length} log entries?",
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.of(context).pop(false),
+  //           child: const Text("Cancel"),
+  //         ),
+  //         TextButton(
+  //           onPressed: () => Navigator.of(context).pop(true),
+  //           style: TextButton.styleFrom(foregroundColor: Colors.red),
+  //           child: const Text("Clear All"),
+  //         ),
+  //       ],
+  //     ),
+  //   );
 
-    if (confirmed == true) {
-      try {
-        final logCount = _repo.items.length;
-        await _repo.clearAllLogs();
+  //   if (confirmed == true) {
+  //     try {
+  //       final logCount = _repo.items.length;
+  //       await _repo.clearAllLogs();
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("$logCount logs cleared"),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        }
-      } catch (e) {
-        // Log error without using print in production
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Error clearing logs: $e")));
-        }
-      }
-    }
-  }
+  //       if (mounted) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(
+  //             content: Text("$logCount logs cleared"),
+  //             backgroundColor: Colors.orange,
+  //           ),
+  //         );
+  //       }
+  //     } catch (e) {
+  //       // Log error without using print in production
+  //       if (mounted) {
+  //         ScaffoldMessenger.of(
+  //           context,
+  //         ).showSnackBar(SnackBar(content: Text("Error clearing logs: $e")));
+  //       }
+  //     }
+  //   }
+  // }
 }

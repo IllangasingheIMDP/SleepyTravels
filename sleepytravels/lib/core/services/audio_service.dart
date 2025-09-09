@@ -1,7 +1,7 @@
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/foundation.dart';
 import 'audio_file_service.dart';
-
+import 'dart:developer' as developer;
 class AudioService {
   AudioService._();
   static final AudioService instance = AudioService._();
@@ -19,7 +19,7 @@ class AudioService {
       _isPlayingNotifier.value = _isPlaying;
 
       if (wasPlaying != _isPlaying) {
-        print('AudioService: Player state changed - playing: $_isPlaying');
+        developer.log('AudioService: Player state changed - playing: $_isPlaying');
       }
     });
   }
@@ -57,8 +57,8 @@ class AudioService {
       _isPlaying = true;
       _isPlayingNotifier.value = true;
     } catch (e) {
-      print('AudioService: Error playing audio: $e');
-      print('AudioService: Error type: ${e.runtimeType}');
+      developer.log('AudioService: Error playing audio: $e');
+      developer.log('AudioService: Error type: ${e.runtimeType}');
       _isPlaying = false;
       _isPlayingNotifier.value = false;
     }
@@ -70,7 +70,7 @@ class AudioService {
       _isPlaying = false;
       _isPlayingNotifier.value = false;
     } catch (e) {
-      print('AudioService: Error stopping audio: $e');
+      developer.log('AudioService: Error stopping audio: $e');
       _isPlaying = false;
       _isPlayingNotifier.value = false;
     }

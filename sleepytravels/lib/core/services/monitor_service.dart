@@ -14,7 +14,7 @@ import '../../data/models/alarm_model.dart';
 import 'notification_service.dart';
 import 'permission_service.dart';
 import 'audio_service.dart';
-
+import 'dart:developer' as developer;
 @pragma('vm:entry-point')
 class MonitorService {
   static final MonitorService _instance = MonitorService._internal();
@@ -57,16 +57,16 @@ class MonitorService {
     if (_isInitialized) return;
 
     try {
-      print('MonitorService: Initializing...');
+      developer.log('MonitorService: Initializing...');
 
       // Try to initialize geofencing
       try {
         await _initializeGeofencing();
         _useGeofencing = true;
-        print('MonitorService: Geofencing initialized successfully');
+        developer.log('MonitorService: Geofencing initialized successfully');
       } catch (e) {
-        print('MonitorService: Geofencing initialization failed: $e');
-        print('MonitorService: Falling back to location polling mode');
+        developer.log('MonitorService: Geofencing initialization failed: $e');
+        developer.log('MonitorService: Falling back to location polling mode');
         _useGeofencing = false;
       }
 
@@ -82,11 +82,11 @@ class MonitorService {
       }
 
       _isInitialized = true;
-      print(
+      developer.log(
         'MonitorService: Initialization complete (Mode: ${_useGeofencing ? 'Geofencing' : 'Polling'})',
       );
     } catch (e) {
-      print('MonitorService: Initialization error: $e');
+      developer.log('MonitorService: Initialization error: $e');
       rethrow;
     }
   }
@@ -105,9 +105,9 @@ class MonitorService {
         geofenceRadiusSortType: GeofenceRadiusSortType.DESC,
       );
 
-      print('MonitorService: GeofenceService setup completed');
+      developer.log('MonitorService: GeofenceService setup completed');
     } catch (e) {
-      print('MonitorService: GeofenceService setup failed: $e');
+      developer.log('MonitorService: GeofenceService setup failed: $e');
       _useGeofencing = false;
       rethrow;
     }
@@ -116,7 +116,7 @@ class MonitorService {
   /// Start monitoring with geofences or fallback to polling
   Future<void> startMonitoring() async {
     try {
-      print('MonitorService: Starting monitoring...');
+      developer.log('MonitorService: Starting monitoring...');
 
       // Initialize if not done
       if (!_isInitialized) {
@@ -126,7 +126,7 @@ class MonitorService {
       // Check permissions
       final hasPermission = await _checkAndRequestPermissions();
       if (!hasPermission) {
-        print('MonitorService: Insufficient permissions for monitoring');
+        developer.log('MonitorService: Insufficient permissions for monitoring');
         return;
       }
 
@@ -148,11 +148,11 @@ class MonitorService {
       }
 
       _isMonitoring = true;
-      print(
+      developer.log(
         'MonitorService: Monitoring started successfully (Mode: ${_useGeofencing ? 'Geofencing' : 'Polling'})',
       );
     } catch (e) {
-      print('MonitorService: Error starting monitoring: $e');
+      developer.log('MonitorService: Error starting monitoring: $e');
       _isMonitoring = false;
       rethrow;
     }
@@ -161,7 +161,7 @@ class MonitorService {
   /// Stop monitoring
   Future<void> stopMonitoring() async {
     try {
-      print('MonitorService: Stopping monitoring...');
+      developer.log('MonitorService: Stopping monitoring...');
 
       _isMonitoring = false;
 
@@ -173,7 +173,7 @@ class MonitorService {
         try {
           GeofenceService.instance.stop();
         } catch (e) {
-          print('MonitorService: Error stopping geofence service: $e');
+          developer.log('MonitorService: Error stopping geofence service: $e');
         }
 
         await _clearAllGeofences();
@@ -191,16 +191,16 @@ class MonitorService {
       _activeGeofenceIds.clear();
       _triggeredAlarms.clear();
 
-      print('MonitorService: Monitoring stopped successfully');
+      developer.log('MonitorService: Monitoring stopped successfully');
     } catch (e) {
-      print('MonitorService: Error stopping monitoring: $e');
+      developer.log('MonitorService: Error stopping monitoring: $e');
     }
   }
 
   /// Start geofence-based monitoring
   Future<void> _startGeofenceMonitoring() async {
     try {
-      print('MonitorService: Starting geofence monitoring...');
+      developer.log('MonitorService: Starting geofence monitoring...');
 
       // Register geofences for active alarms
       await _registerGeofencesForActiveAlarms();
@@ -209,7 +209,7 @@ class MonitorService {
       // This ensures we catch the alarm even if geofence events are not working perfectly
       try {
         await GeofenceService.instance.start();
-        print('MonitorService: GeofenceService started successfully');
+        developer.log('MonitorService: GeofenceService started successfully');
 
         // Start a slower polling backup (every 30 seconds instead of 10)
         _fallbackTimer?.cancel();
@@ -218,21 +218,21 @@ class MonitorService {
         ) async {
           await _processAlarmsPolling();
         });
-        print(
+        developer.log(
           'MonitorService: Backup polling started (30s interval) with geofencing',
         );
       } catch (e) {
-        print('MonitorService: Failed to start GeofenceService: $e');
+        developer.log('MonitorService: Failed to start GeofenceService: $e');
         throw e;
       }
 
-      print(
+      developer.log(
         'MonitorService: Hybrid geofence + polling monitoring setup completed',
       );
     } catch (e) {
-      print('MonitorService: Error starting geofence monitoring: $e');
+      developer.log('MonitorService: Error starting geofence monitoring: $e');
       // Fall back to polling if geofencing fails
-      print(
+      developer.log(
         'MonitorService: Falling back to polling mode due to geofencing error',
       );
       _useGeofencing = false;
@@ -243,18 +243,18 @@ class MonitorService {
   /// Handle geofence events (placeholder for future implementation)
   Future<void> _handleGeofenceEvent(dynamic geofenceStatus) async {
     try {
-      print('MonitorService: Geofence event received: $geofenceStatus');
+      developer.log('MonitorService: Geofence event received: $geofenceStatus');
       // For now, just trigger alarm checking
       await _processAlarmsPolling();
     } catch (e) {
-      print('MonitorService: Error handling geofence event: $e');
+      developer.log('MonitorService: Error handling geofence event: $e');
     }
   }
 
   /// Start polling-based monitoring (fallback)
   Future<void> _startPollingMonitoring() async {
     try {
-      print('MonitorService: Starting polling monitoring...');
+      developer.log('MonitorService: Starting polling monitoring...');
 
       _fallbackTimer?.cancel();
       _fallbackTimer = Timer.periodic(
@@ -264,11 +264,11 @@ class MonitorService {
         },
       );
 
-      print(
+      developer.log(
         'MonitorService: Polling monitoring started (interval: ${_fallbackIntervalSeconds}s)',
       );
     } catch (e) {
-      print('MonitorService: Error starting polling monitoring: $e');
+      developer.log('MonitorService: Error starting polling monitoring: $e');
       rethrow;
     }
   }
@@ -282,7 +282,7 @@ class MonitorService {
         timeLimit: const Duration(seconds: 10),
       );
 
-      print(
+      developer.log(
         'MonitorService: Current position: ${position.latitude}, ${position.longitude} (accuracy: ${position.accuracy}m)',
       );
 
@@ -293,7 +293,7 @@ class MonitorService {
         // Skip if already triggered
         if (_triggeredAlarms.contains(alarm.id)) {
           if (_debugMode)
-            print(
+            developer.log(
               'MonitorService: Alarm ${alarm.id} already triggered, skipping',
             );
           continue;
@@ -305,12 +305,12 @@ class MonitorService {
           LatLng(alarm.destLat, alarm.destLng),
         );
 
-        print(
+        developer.log(
           'MonitorService: Alarm ${alarm.id} - Distance: ${distanceInMeters.toStringAsFixed(2)}m, Radius: ${alarm.radiusM}m, Within: ${distanceInMeters <= alarm.radiusM}',
         );
 
         if (distanceInMeters <= alarm.radiusM) {
-          print(
+          developer.log(
             'MonitorService: 🚨 TRIGGERING ALARM ${alarm.id} 🚨 - User is within ${alarm.radiusM}m radius (distance: ${distanceInMeters.toStringAsFixed(1)}m)!',
           );
           await _triggerAlarm(alarm, position.latitude, position.longitude);
@@ -318,7 +318,7 @@ class MonitorService {
         }
       }
     } catch (e) {
-      print('MonitorService: Error in polling cycle: $e');
+      developer.log('MonitorService: Error in polling cycle: $e');
     }
   }
 
@@ -327,7 +327,7 @@ class MonitorService {
     try {
       if (alarm.id == null) return;
 
-      print('MonitorService: TRIGGERING ALARM ${alarm.id}!');
+      developer.log('MonitorService: TRIGGERING ALARM ${alarm.id}!');
 
       // Mark as triggered
       _triggeredAlarms.add(alarm.id!);
@@ -340,7 +340,7 @@ class MonitorService {
         lng: lng,
       );
       await _logRepo.addLog(logEntry);
-      print('MonitorService: Log entry created for alarm ${alarm.id}');
+      developer.log('MonitorService: Log entry created for alarm ${alarm.id}');
 
       // Show notification
       await NotificationService.instance.showNotification(
@@ -351,11 +351,11 @@ class MonitorService {
 
       // Play sound if available and no other alarm is playing
       if (alarm.soundPath != null && !AudioService.instance.isPlaying) {
-        print('MonitorService: Playing sound: ${alarm.soundPath}');
+        developer.log('MonitorService: Playing sound: ${alarm.soundPath}');
         try {
           await AudioService.instance.playFromPath(alarm.soundPath!);
         } catch (e) {
-          print('MonitorService: Error playing sound: $e');
+          developer.log('MonitorService: Error playing sound: $e');
         }
       }
 
@@ -371,9 +371,9 @@ class MonitorService {
         await _removeGeofence(geofenceId);
       }
 
-      print('MonitorService: Alarm ${alarm.id} processed and deactivated');
+      developer.log('MonitorService: Alarm ${alarm.id} processed and deactivated');
     } catch (e) {
-      print('MonitorService: Error triggering alarm: $e');
+      developer.log('MonitorService: Error triggering alarm: $e');
     }
   }
 
@@ -383,11 +383,11 @@ class MonitorService {
       final alarms = await _alarmRepo.getActiveAlarmsFromDB();
       _cachedAlarms.clear();
       _cachedAlarms.addAll(alarms);
-      print(
+      developer.log(
         'MonitorService: Cache refreshed with ${_cachedAlarms.length} active alarms',
       );
     } catch (e) {
-      print('MonitorService: Error refreshing alarm cache: $e');
+      developer.log('MonitorService: Error refreshing alarm cache: $e');
     }
   }
 
@@ -404,17 +404,17 @@ class MonitorService {
         if (!PermissionService.instance.hasLocationPermission(
           requestedPermission,
         )) {
-          print('MonitorService: Location permission denied');
+          developer.log('MonitorService: Location permission denied');
           return false;
         }
 
         // Log permission type for monitoring efficiency
         if (requestedPermission == geolocator.LocationPermission.always) {
-          print(
+          developer.log(
             'MonitorService: Always location permission granted - optimal for background monitoring',
           );
         } else {
-          print(
+          developer.log(
             'MonitorService: WhileInUse permission granted - background monitoring may be limited',
           );
         }
@@ -424,7 +424,7 @@ class MonitorService {
       final serviceEnabled = await PermissionService.instance
           .isLocationServiceEnabled();
       if (!serviceEnabled) {
-        print('MonitorService: Location services disabled');
+        developer.log('MonitorService: Location services disabled');
         return false;
       }
 
@@ -436,7 +436,7 @@ class MonitorService {
         if (!PermissionService.instance.hasActivityRecognitionPermission(
           activityStatus,
         )) {
-          print(
+          developer.log(
             'MonitorService: Requesting activity recognition permission for geofencing',
           );
           final requestedActivity = await PermissionService.instance
@@ -445,16 +445,16 @@ class MonitorService {
           if (!PermissionService.instance.hasActivityRecognitionPermission(
             requestedActivity,
           )) {
-            print(
+            developer.log(
               'MonitorService: Activity recognition permission denied - falling back to polling mode',
             );
             _useGeofencing = false;
             return true; // Continue with polling mode
           } else {
-            print('MonitorService: Activity recognition permission granted');
+            developer.log('MonitorService: Activity recognition permission granted');
           }
         } else {
-          print(
+          developer.log(
             'MonitorService: Activity recognition permission already granted',
           );
         }
@@ -462,7 +462,7 @@ class MonitorService {
 
       return true;
     } catch (e) {
-      print('MonitorService: Error checking permissions: $e');
+      developer.log('MonitorService: Error checking permissions: $e');
       return false;
     }
   }
@@ -472,7 +472,7 @@ class MonitorService {
     if (!_useGeofencing) return;
 
     try {
-      print(
+      developer.log(
         'MonitorService: Registering geofences for ${_cachedAlarms.length} alarms',
       );
 
@@ -482,7 +482,7 @@ class MonitorService {
           : _maxGeofencesAndroid;
 
       if (_cachedAlarms.length > platformLimit) {
-        print(
+        developer.log(
           'MonitorService: Warning - ${_cachedAlarms.length} alarms exceed platform limit of $platformLimit geofences',
         );
       }
@@ -491,7 +491,7 @@ class MonitorService {
 
       for (final alarm in _cachedAlarms) {
         if (registeredCount >= platformLimit) {
-          print(
+          developer.log(
             'MonitorService: Skipping alarm ${alarm.id} - platform limit reached',
           );
           break;
@@ -503,7 +503,7 @@ class MonitorService {
 
         // Skip if already registered
         if (_activeGeofenceIds.contains(geofenceId)) {
-          print('MonitorService: Geofence $geofenceId already registered');
+          developer.log('MonitorService: Geofence $geofenceId already registered');
           continue;
         }
 
@@ -525,22 +525,22 @@ class MonitorService {
           _activeGeofenceIds.add(geofenceId);
           registeredCount++;
 
-          print(
+          developer.log(
             'MonitorService: Registered geofence for alarm ${alarm.id} at (${alarm.destLat}, ${alarm.destLng}) with radius ${alarm.radiusM}m',
           );
         } catch (e) {
-          print(
+          developer.log(
             'MonitorService: Error creating geofence for alarm ${alarm.id}: $e',
           );
         }
       }
 
       await _saveGeofenceIds();
-      print(
+      developer.log(
         'MonitorService: Geofence registration completed - ${registeredCount} geofences registered',
       );
     } catch (e) {
-      print('MonitorService: Error registering geofences: $e');
+      developer.log('MonitorService: Error registering geofences: $e');
     }
   }
 
@@ -552,9 +552,9 @@ class MonitorService {
       GeofenceService.instance.removeGeofenceById(geofenceId);
       _activeGeofenceIds.remove(geofenceId);
       await _saveGeofenceIds();
-      print('MonitorService: Removed geofence: $geofenceId');
+      developer.log('MonitorService: Removed geofence: $geofenceId');
     } catch (e) {
-      print('MonitorService: Error removing geofence $geofenceId: $e');
+      developer.log('MonitorService: Error removing geofence $geofenceId: $e');
     }
   }
 
@@ -568,9 +568,9 @@ class MonitorService {
       }
       _activeGeofenceIds.clear();
       await _saveGeofenceIds();
-      print('MonitorService: All geofences cleared');
+      developer.log('MonitorService: All geofences cleared');
     } catch (e) {
-      print('MonitorService: Error clearing geofences: $e');
+      developer.log('MonitorService: Error clearing geofences: $e');
     }
   }
 
@@ -581,7 +581,7 @@ class MonitorService {
       final geofenceList = _activeGeofenceIds.toList();
       await prefs.setString(_geofenceIdsKey, jsonEncode(geofenceList));
     } catch (e) {
-      print('MonitorService: Error saving geofence IDs: $e');
+      developer.log('MonitorService: Error saving geofence IDs: $e');
     }
   }
 
@@ -594,12 +594,12 @@ class MonitorService {
       if (geofenceJson != null) {
         final geofenceList = List<String>.from(jsonDecode(geofenceJson));
         _activeGeofenceIds.addAll(geofenceList);
-        print(
+        developer.log(
           'MonitorService: Restored ${geofenceList.length} geofence IDs from preferences',
         );
       }
     } catch (e) {
-      print('MonitorService: Error restoring geofence IDs: $e');
+      developer.log('MonitorService: Error restoring geofence IDs: $e');
     }
   }
 
@@ -627,9 +627,9 @@ class MonitorService {
           onBackground: onIosBackground,
         ),
       );
-      print('MonitorService: Background service configured');
+      developer.log('MonitorService: Background service configured');
     } catch (e) {
-      print('MonitorService: Error configuring background service: $e');
+      developer.log('MonitorService: Error configuring background service: $e');
     }
   }
 
@@ -658,13 +658,13 @@ class MonitorService {
         final monitorService = MonitorService();
         if (monitorService._isMonitoring &&
             monitorService._cachedAlarms.isNotEmpty) {
-          print('MonitorService: Background service checking alarms...');
+          developer.log('MonitorService: Background service checking alarms...');
           await monitorService._processAlarmsPolling();
         }
 
-        print('MonitorService: Background service heartbeat');
+        developer.log('MonitorService: Background service heartbeat');
       } catch (e) {
-        print('MonitorService: Background service error: $e');
+        developer.log('MonitorService: Background service error: $e');
       }
     });
   }
@@ -673,7 +673,7 @@ class MonitorService {
   @pragma('vm:entry-point')
   static bool onIosBackground(ServiceInstance service) {
     WidgetsFlutterBinding.ensureInitialized();
-    print('MonitorService: iOS background mode');
+    developer.log('MonitorService: iOS background mode');
     return true;
   }
 
@@ -704,16 +704,16 @@ class MonitorService {
         _activeGeofenceIds.add(geofenceId);
         await _saveGeofenceIds();
 
-        print(
+        developer.log(
           'MonitorService: Added alarm ${alarm.id} to cache and registered geofence',
         );
       } else {
-        print(
+        developer.log(
           'MonitorService: Added alarm ${alarm.id} to cache (polling mode)',
         );
       }
     } catch (e) {
-      print('MonitorService: Error adding alarm to cache: $e');
+      developer.log('MonitorService: Error adding alarm to cache: $e');
     }
   }
 
@@ -728,9 +728,9 @@ class MonitorService {
         await _removeGeofence(geofenceId);
       }
 
-      print('MonitorService: Removed alarm $alarmId from cache');
+      developer.log('MonitorService: Removed alarm $alarmId from cache');
     } catch (e) {
-      print('MonitorService: Error removing alarm from cache: $e');
+      developer.log('MonitorService: Error removing alarm from cache: $e');
     }
   }
 
@@ -765,10 +765,10 @@ class MonitorService {
           await _saveGeofenceIds();
         }
 
-        print('MonitorService: Updated alarm ${updatedAlarm.id} in cache');
+        developer.log('MonitorService: Updated alarm ${updatedAlarm.id} in cache');
       }
     } catch (e) {
-      print('MonitorService: Error updating alarm in cache: $e');
+      developer.log('MonitorService: Error updating alarm in cache: $e');
     }
   }
 }

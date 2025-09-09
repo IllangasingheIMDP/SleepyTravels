@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
-
+import 'dart:developer' as developer;
 class LocationSearchResult {
   final String displayName;
   final String address;
@@ -43,7 +43,7 @@ class LocationSearchService {
     }
 
     try {
-      print(
+      developer.log(
         'LocationSearchService: Searching for "$query" using Nominatim API',
       );
 
@@ -69,7 +69,7 @@ class LocationSearchService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        print(
+        developer.log(
           'LocationSearchService: Found ${data.length} results from Nominatim',
         );
 
@@ -77,13 +77,13 @@ class LocationSearchService {
             .map((item) => LocationSearchResult.fromNominatim(item))
             .toList();
       } else {
-        print(
+        developer.log(
           'LocationSearchService: Error ${response.statusCode}: ${response.body}',
         );
         return [];
       }
     } catch (e) {
-      print('LocationSearchService: Error searching locations: $e');
+      developer.log('LocationSearchService: Error searching locations: $e');
       return [];
     }
   }
@@ -123,13 +123,13 @@ class LocationSearchService {
             .map((item) => LocationSearchResult.fromNominatim(item))
             .toList();
       } else {
-        print(
+        developer.log(
           'LocationSearchService: Error ${response.statusCode}: ${response.body}',
         );
         return [];
       }
     } catch (e) {
-      print('LocationSearchService: Error searching nearby locations: $e');
+      developer.log('LocationSearchService: Error searching nearby locations: $e');
       return [];
     }
   }

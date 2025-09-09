@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-
+import 'dart:developer' as developer;
 class AudioFileService {
   AudioFileService._();
   static final AudioFileService instance = AudioFileService._();
@@ -37,7 +37,7 @@ class AudioFileService {
       
       return permanentPath;
     } catch (e) {
-      print('AudioFileService: Error saving audio file: $e');
+      developer.log('AudioFileService: Error saving audio file: $e');
       return null;
     }
   }
@@ -85,7 +85,7 @@ class AudioFileService {
 
       return totalSize;
     } catch (e) {
-      print('AudioFileService: Error calculating directory size: $e');
+      developer.log('AudioFileService: Error calculating directory size: $e');
       return 0;
     }
   }

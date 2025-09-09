@@ -738,6 +738,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text("SleepyTravels"),
         actions: [
@@ -889,217 +890,360 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                 ],
               ),
-              child: Column(
-                children: [
-                  // Always show distance
-                  if (currentLocation != null && selectedLocation != null)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16.0),
-                      margin: const EdgeInsets.only(bottom: 8.0),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF1A237E).withValues(alpha: 0.8),
-                            const Color(0xFF3949AB).withValues(alpha: 0.6),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.4),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(
-                                0xFFFFD700,
-                              ).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.straighten,
-                              color: Color(0xFFFFD700),
-                              size: 20,
-                            ),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // Always show distance
+                    if (currentLocation != null && selectedLocation != null)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16.0),
+                        margin: const EdgeInsets.only(bottom: 8.0),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF1A237E).withValues(alpha: 0.8),
+                              const Color(0xFF3949AB).withValues(alpha: 0.6),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                          const SizedBox(width: 12),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(
+                              0xFFFFD700,
+                            ).withValues(alpha: 0.4),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFFFFD700,
+                                ).withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.straighten,
+                                color: Color(0xFFFFD700),
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
 
-                          Expanded(
-                            child: Text(
-                              'Distance: ${_calculateDistanceToSelected()?.toStringAsFixed(1) ?? "Unknown"} meters',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFFFFD700),
-                                letterSpacing: 0.5,
+                            Expanded(
+                              child: Text(
+                                'Distance: ${_calculateDistanceToSelected()?.toStringAsFixed(1) ?? "Unknown"} meters',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFFFD700),
+                                  letterSpacing: 0.5,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  // If panel is collapsed, show expand button
-                  if (!_isPanelExpanded)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            _isPanelExpanded = true;
-                          });
-                        },
-                        icon: const Icon(
-                          Icons.expand_more,
-                          color: Color(0xFFFFD700),
+                          ],
                         ),
-                        label: const Text(
-                          "Expand",
-                          style: TextStyle(
+                      ),
+                    // If panel is collapsed, show expand button
+                    if (!_isPanelExpanded)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _isPanelExpanded = true;
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.expand_more,
                             color: Color(0xFFFFD700),
-                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                          label: const Text(
+                            "Expand",
+                            style: TextStyle(
+                              color: Color(0xFFFFD700),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  // If expanded, show full controls
-                  if (_isPanelExpanded)
-                    Column(
-                      children: [
-                        // Collapse button at the top
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              setState(() {
-                                _isPanelExpanded = false;
-                              });
-                            },
-                            icon: const Icon(
-                              Icons.expand_less,
-                              color: Color(0xFFFFD700),
-                            ),
-                            label: const Text(
-                              "Collapse",
-                              style: TextStyle(
+                    // If expanded, show full controls
+                    if (_isPanelExpanded)
+                      Column(
+                        children: [
+                          // Collapse button at the top
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _isPanelExpanded = false;
+                                });
+                              },
+                              icon: const Icon(
+                                Icons.expand_less,
                                 color: Color(0xFFFFD700),
-                                fontWeight: FontWeight.bold,
                               ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                              label: const Text(
+                                "Collapse",
+                                style: TextStyle(
+                                  color: Color(0xFFFFD700),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        // Custom radius input
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2A2A2A),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: const Color(
-                                0xFFFFD700,
-                              ).withValues(alpha: 0.2),
-                              width: 1,
+                          // Custom radius input
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2A2A2A),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(
+                                  0xFFFFD700,
+                                ).withValues(alpha: 0.2),
+                                width: 1,
+                              ),
                             ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.radio_button_checked,
-                                    color: Color(0xFFFFD700),
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    "Alarm Radius: $radius m",
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.radio_button_checked,
                                       color: Color(0xFFFFD700),
-                                      letterSpacing: 0.5,
+                                      size: 20,
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: TextField(
-                                      controller: _radiusController,
-                                      keyboardType: TextInputType.number,
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      "Alarm Radius: $radius m",
                                       style: const TextStyle(
-                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFFFFD700),
+                                        letterSpacing: 0.5,
                                       ),
-                                      decoration: InputDecoration(
-                                        labelText: "Custom radius (m)",
-                                        labelStyle: const TextStyle(
-                                          color: Color(0xFFFFD700),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _radiusController,
+                                        keyboardType: TextInputType.number,
+                                        style: const TextStyle(
+                                          color: Colors.white,
                                         ),
-                                        hintText: "Enter radius (min 100)",
-                                        hintStyle: TextStyle(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.6,
-                                          ),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          borderSide: BorderSide(
-                                            color: Color(
-                                              0xFFFFD700,
-                                            ).withValues(alpha: 0.3),
-                                          ),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          borderSide: const BorderSide(
+                                        decoration: InputDecoration(
+                                          labelText: "Custom radius (m)",
+                                          labelStyle: const TextStyle(
                                             color: Color(0xFFFFD700),
-                                            width: 2,
+                                          ),
+                                          hintText: "Enter radius (min 100)",
+                                          hintStyle: TextStyle(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            borderSide: BorderSide(
+                                              color: Color(
+                                                0xFFFFD700,
+                                              ).withValues(alpha: 0.3),
+                                            ),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            borderSide: const BorderSide(
+                                              color: Color(0xFFFFD700),
+                                              width: 2,
+                                            ),
+                                          ),
+                                          fillColor: const Color(0xFF1A1A1A),
+                                          filled: true,
+                                        ),
+                                        onChanged: (value) {
+                                          final parsed = int.tryParse(value);
+                                          if (parsed != null && parsed >= 100) {
+                                            setState(() => radius = parsed);
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        final parsed = int.tryParse(
+                                          _radiusController.text,
+                                        );
+                                        if (parsed == null || parsed < 100) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                "Radius must be at least 100 meters!",
+                                              ),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        setState(() => radius = parsed);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xFFFFD700),
+                                        foregroundColor: Color(0xFF1A237E),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
                                           ),
                                         ),
-                                        fillColor: const Color(0xFF1A1A1A),
-                                        filled: true,
                                       ),
-                                      onChanged: (value) {
-                                        final parsed = int.tryParse(value);
-                                        if (parsed != null && parsed >= 100) {
-                                          setState(() => radius = parsed);
-                                        }
-                                      },
+                                      child: const Text("Set"),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                SliderTheme(
+                                  data: SliderTheme.of(context).copyWith(
+                                    activeTrackColor: const Color(0xFFFFD700),
+                                    inactiveTrackColor: const Color(
+                                      0xFF1A237E,
+                                    ).withValues(alpha: 0.3),
+                                    thumbColor: const Color(0xFFFFD700),
+                                    overlayColor: const Color(
+                                      0xFFFFD700,
+                                    ).withValues(alpha: 0.2),
+                                    valueIndicatorColor: const Color(
+                                      0xFF1A237E,
+                                    ),
+                                    valueIndicatorTextStyle: const TextStyle(
+                                      color: Color(0xFFFFD700),
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      final parsed = int.tryParse(
-                                        _radiusController.text,
-                                      );
-                                      if (parsed == null || parsed < 100) {
+                                  child: Slider(
+                                    value: radius.toDouble(),
+                                    min: 100,
+                                    max: 5000,
+                                    divisions: 49,
+                                    label: "$radius m",
+                                    onChanged: (v) =>
+                                        setState(() => radius = v.toInt()),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Action buttons
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0xFFFFD700),
+                                        const Color(0xFFFFA500),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(
+                                          0xFFFFD700,
+                                        ).withValues(alpha: 0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ElevatedButton.icon(
+                                    onPressed: pickMP3,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    icon: Icon(
+                                      mp3Path == null
+                                          ? Icons.audiotrack
+                                          : Icons.check_circle,
+                                      color: const Color(0xFF1A237E),
+                                      size: 20,
+                                    ),
+                                    label: Text(
+                                      mp3Path == null ? "Pick Audio" : "Tone",
+                                      style: const TextStyle(
+                                        color: Color(0xFF1A237E),
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0xFF1A237E),
+                                        const Color(0xFF3949AB),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(
+                                          0xFF1A237E,
+                                        ).withValues(alpha: 0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ElevatedButton.icon(
+                                    onPressed: () async {
+                                      if (radius < 100) {
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
@@ -1112,206 +1256,71 @@ class _MapScreenState extends State<MapScreen> {
                                         );
                                         return;
                                       }
-                                      setState(() => radius = parsed);
+                                      final messenger = ScaffoldMessenger.of(
+                                        context,
+                                      );
+                                      try {
+                                        final alarm = AlarmModel(
+                                          destLat: selectedLocation!.latitude,
+                                          destLng: selectedLocation!.longitude,
+                                          radiusM: radius,
+                                          soundPath: mp3Path,
+                                          createdAt: DateTime.now()
+                                              .millisecondsSinceEpoch,
+                                        );
+                                        await _repo.addAlarm(alarm);
+                                        if (mounted) {
+                                          setState(() {
+                                            _isPanelExpanded = false;
+                                            _radiusController.clear();
+                                          });
+                                          messenger.showSnackBar(
+                                            const SnackBar(
+                                              content: Text("Alarm saved!"),
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (mounted) {
+                                          messenger.showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                "Error saving alarm: $e",
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFFFFD700),
-                                      foregroundColor: Color(0xFF1A237E),
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
-                                    child: const Text("Set"),
+                                    icon: const Icon(
+                                      Icons.save,
+                                      color: Color(0xFFFFD700),
+                                      size: 20,
+                                    ),
+                                    label: const Text(
+                                      "Save Alarm",
+                                      style: TextStyle(
+                                        color: Color(0xFFFFD700),
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              SliderTheme(
-                                data: SliderTheme.of(context).copyWith(
-                                  activeTrackColor: const Color(0xFFFFD700),
-                                  inactiveTrackColor: const Color(
-                                    0xFF1A237E,
-                                  ).withValues(alpha: 0.3),
-                                  thumbColor: const Color(0xFFFFD700),
-                                  overlayColor: const Color(
-                                    0xFFFFD700,
-                                  ).withValues(alpha: 0.2),
-                                  valueIndicatorColor: const Color(0xFF1A237E),
-                                  valueIndicatorTextStyle: const TextStyle(
-                                    color: Color(0xFFFFD700),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                child: Slider(
-                                  value: radius.toDouble(),
-                                  min: 100,
-                                  max: 5000,
-                                  divisions: 49,
-                                  label: "$radius m",
-                                  onChanged: (v) =>
-                                      setState(() => radius = v.toInt()),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Action buttons
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      const Color(0xFFFFD700),
-                                      const Color(0xFFFFA500),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(
-                                        0xFFFFD700,
-                                      ).withValues(alpha: 0.3),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: ElevatedButton.icon(
-                                  onPressed: pickMP3,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  icon: Icon(
-                                    mp3Path == null
-                                        ? Icons.audiotrack
-                                        : Icons.check_circle,
-                                    color: const Color(0xFF1A237E),
-                                    size: 20,
-                                  ),
-                                  label: Text(
-                                    mp3Path == null ? "Pick Audio" : "Tone",
-                                    style: const TextStyle(
-                                      color: Color(0xFF1A237E),
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.8,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Container(
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      const Color(0xFF1A237E),
-                                      const Color(0xFF3949AB),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(
-                                        0xFF1A237E,
-                                      ).withValues(alpha: 0.3),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: ElevatedButton.icon(
-                                  onPressed: () async {
-                                    if (radius < 100) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            "Radius must be at least 100 meters!",
-                                          ),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                      return;
-                                    }
-                                    final messenger = ScaffoldMessenger.of(
-                                      context,
-                                    );
-                                    try {
-                                      final alarm = AlarmModel(
-                                        destLat: selectedLocation!.latitude,
-                                        destLng: selectedLocation!.longitude,
-                                        radiusM: radius,
-                                        soundPath: mp3Path,
-                                        createdAt: DateTime.now()
-                                            .millisecondsSinceEpoch,
-                                      );
-                                      await _repo.addAlarm(alarm);
-                                      if (mounted) {
-                                        setState(() {
-                                          _isPanelExpanded = false;
-                                          _radiusController.clear();
-                                        });
-                                        messenger.showSnackBar(
-                                          const SnackBar(
-                                            content: Text("Alarm saved!"),
-                                          ),
-                                        );
-                                      }
-                                    } catch (e) {
-                                      if (mounted) {
-                                        messenger.showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              "Error saving alarm: $e",
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  icon: const Icon(
-                                    Icons.save,
-                                    color: Color(0xFFFFD700),
-                                    size: 20,
-                                  ),
-                                  label: const Text(
-                                    "Save Alarm",
-                                    style: TextStyle(
-                                      color: Color(0xFFFFD700),
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.8,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                ],
+                        ],
+                      ),
+                  ],
+                ),
               ),
             ),
         ],

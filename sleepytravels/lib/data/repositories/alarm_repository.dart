@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/db_service.dart';
 import '../models/alarm_model.dart';
 import '../../core/services/monitor_service.dart';
-
+import 'dart:developer' as developer;
 class AlarmRepository extends ChangeNotifier {
   Future<void> deactivateAlarm(int id) async {
     try {
@@ -18,7 +18,7 @@ class AlarmRepository extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print('AlarmRepository: Error deactivating alarm $id: $e');
+      developer.log('AlarmRepository: Error deactivating alarm $id: $e');
       // Alarm not found, do nothing
     }
   }
@@ -37,7 +37,7 @@ class AlarmRepository extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print('AlarmRepository: Error activating alarm $id: $e');
+      developer.log('AlarmRepository: Error activating alarm $id: $e');
       // Alarm not found, do nothing
     }
   }
@@ -122,7 +122,7 @@ class AlarmRepository extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print('Error updating alarm: $e');
+      developer.log('Error updating alarm: $e');
       rethrow;
     }
   }
