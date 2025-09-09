@@ -60,7 +60,8 @@ class NotificationService {
   }
 
   Future<void> _createNotificationChannel() async {
-    const androidChannel = AndroidNotificationChannel(
+    // Main alarm notification channel
+    const alarmChannel = AndroidNotificationChannel(
       'sleepytravels_alarm_channel',
       'SleepyTravels Alarm Alerts',
       description:
@@ -71,15 +72,44 @@ class NotificationService {
       showBadge: true,
     );
 
+    // Background service notification channel
+    const backgroundChannel = AndroidNotificationChannel(
+      'sleepy_travels_bg',
+      'SleepyTravels Background Service',
+      description: 'Background location monitoring for travel alarms',
+      importance: Importance.low,
+      playSound: false,
+      enableVibration: false,
+      showBadge: false,
+    );
+
     final androidImplementation = _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
 
     if (androidImplementation != null) {
-      await androidImplementation.createNotificationChannel(androidChannel);
-      print('NotificationService: Notification channel created');
+      await androidImplementation.createNotificationChannel(alarmChannel);
+      await androidImplementation.createNotificationChannel(backgroundChannel);
+      print('NotificationService: Notification channels created');
     }
+  }
+
+  // Get background service notification details
+  static AndroidNotificationDetails getBackgroundNotificationDetails() {
+    return const AndroidNotificationDetails(
+      'sleepy_travels_bg',
+      'SleepyTravels Background Service',
+      channelDescription: 'Background location monitoring for travel alarms',
+      importance: Importance.low,
+      priority: Priority.low,
+      showWhen: false,
+      autoCancel: false,
+      ongoing: true,
+      playSound: false,
+      enableVibration: false,
+      icon: '@mipmap/ic_launcher',
+    );
   }
 
   Future<void> showNotification({

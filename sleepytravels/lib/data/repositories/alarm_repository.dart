@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/db_service.dart';
 import '../models/alarm_model.dart';
+import '../../core/services/monitor_service.dart';
 
 class AlarmRepository extends ChangeNotifier {
   Future<void> deactivateAlarm(int id) async {
@@ -11,8 +12,13 @@ class AlarmRepository extends ChangeNotifier {
         'UPDATE alarms SET active = 0 WHERE id = ?',
         [id],
       );
+
+      // Update MonitorService cache
+      MonitorService().removeAlarmFromCache(id);
+
       notifyListeners();
     } catch (e) {
+      print('AlarmRepository: Error deactivating alarm $id: $e');
       // Alarm not found, do nothing
     }
   }
@@ -25,8 +31,13 @@ class AlarmRepository extends ChangeNotifier {
         'UPDATE alarms SET active = 1 WHERE id = ?',
         [id],
       );
+
+      // Update MonitorService cache
+      MonitorService().addAlarmToCache(alarm);
+
       notifyListeners();
     } catch (e) {
+      print('AlarmRepository: Error activating alarm $id: $e');
       // Alarm not found, do nothing
     }
   }
@@ -59,9 +70,13 @@ class AlarmRepository extends ChangeNotifier {
     });
     alarm.id = id;
     _items.add(alarm);
-    notifyListeners();
 
-    // Debug: Print the alarm that was added
+    // Update MonitorService cache if alarm is active
+    if (alarm.active) {
+      MonitorService().addAlarmToCache(alarm);
+    }
+
+    notifyListeners();
   }
 
   List<AlarmModel> getActiveAlarms() {
@@ -79,6 +94,10 @@ class AlarmRepository extends ChangeNotifier {
   Future<void> removeAlarm(int id) async {
     await DBService.instance.delete('alarms', id);
     _items.removeWhere((a) => a.id == id);
+
+    // Update MonitorService cache
+    MonitorService().removeAlarmFromCache(id);
+
     notifyListeners();
   }
 
@@ -94,6 +113,11 @@ class AlarmRepository extends ChangeNotifier {
       if (alarmIndex != -1) {
         _items[alarmIndex].radiusM = newRadius;
         _items[alarmIndex].soundPath = newSoundPath;
+
+        // Update MonitorService cache if alarm is active
+        if (_items[alarmIndex].active) {
+          MonitorService().updateAlarmInCache(_items[alarmIndex]);
+        }
       }
 
       notifyListeners();

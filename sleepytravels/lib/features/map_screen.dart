@@ -68,6 +68,15 @@ class _MapScreenState extends State<MapScreen> {
 
     // Listen to audio service playing state changes
     AudioService.instance.isPlayingNotifier.addListener(_onAudioStateChanged);
+
+    // Listen to search focus changes to hide/show bottom panel
+    _searchFocusNode.addListener(() {
+      if (mounted) {
+        setState(() {
+          // This will trigger a rebuild and hide/show the bottom panel
+        });
+      }
+    });
   }
 
   double? _calculateDistanceToSelected() {
@@ -779,6 +788,8 @@ class _MapScreenState extends State<MapScreen> {
                         // Hide search results when user taps on map
                         _showSearchResults = false;
                       });
+                      // Unfocus search field when tapping on map
+                      _searchFocusNode.unfocus();
                     },
                   ),
                   children: [
@@ -787,6 +798,20 @@ class _MapScreenState extends State<MapScreen> {
                           "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                       userAgentPackageName: 'com.example.sleepytravels_app',
                     ),
+                    // Circle layer to show alarm radius
+                    if (selectedLocation != null)
+                      CircleLayer(
+                        circles: [
+                          CircleMarker(
+                            point: selectedLocation!,
+                            radius: radius.toDouble(),
+                            useRadiusInMeter: true,
+                            color: const Color(0xFFFFD700).withOpacity(0.2),
+                            borderColor: const Color(0xFFFFD700),
+                            borderStrokeWidth: 2,
+                          ),
+                        ],
+                      ),
                     MarkerLayer(
                       markers: [
                         // Current location marker
@@ -837,7 +862,9 @@ class _MapScreenState extends State<MapScreen> {
               ],
             ),
           ),
-          if (selectedLocation != null)
+          if (selectedLocation != null &&
+              !_searchFocusNode.hasFocus &&
+              !_showSearchResults)
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               margin: const EdgeInsets.all(8.0),
@@ -895,6 +922,7 @@ class _MapScreenState extends State<MapScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
+
                           Expanded(
                             child: Text(
                               'Distance: ${_calculateDistanceToSelected()?.toStringAsFixed(1) ?? "Unknown"} meters',
@@ -944,6 +972,36 @@ class _MapScreenState extends State<MapScreen> {
                   if (_isPanelExpanded)
                     Column(
                       children: [
+                        // Collapse button at the top
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _isPanelExpanded = false;
+                                _alarmJustSaved = false;
+                              });
+                            },
+                            icon: const Icon(
+                              Icons.expand_less,
+                              color: Color(0xFFFFD700),
+                            ),
+                            label: const Text(
+                              "Collapse",
+                              style: TextStyle(
+                                color: Color(0xFFFFD700),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
                         // Custom radius input
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -1132,9 +1190,7 @@ class _MapScreenState extends State<MapScreen> {
                                     size: 20,
                                   ),
                                   label: Text(
-                                    mp3Path == null
-                                        ? "Pick Audio"
-                                        : "Audio Selected",
+                                    mp3Path == null ? "Pick Audio" : "Tone",
                                     style: const TextStyle(
                                       color: Color(0xFF1A237E),
                                       fontWeight: FontWeight.bold,
