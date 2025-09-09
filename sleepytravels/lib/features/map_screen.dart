@@ -173,6 +173,15 @@ class _MapScreenState extends State<MapScreen> {
     _searchFocusNode.unfocus();
   }
 
+  String _formatRadius(int meters) {
+    if (meters >= 1000) {
+      double km = meters / 1000.0;
+      return '${km.toStringAsFixed(1)} km';
+    } else {
+      return '$meters m';
+    }
+  }
+
   void _showDebugInfo() async {
     final alarms = await _repo.getActiveAlarmsFromDB();
     if (!mounted) return;
@@ -202,7 +211,7 @@ class _MapScreenState extends State<MapScreen> {
                 (alarm) => Padding(
                   padding: const EdgeInsets.only(top: 5),
                   child: Text(
-                    'Alarm ${alarm.id}: ${alarm.destLat.toStringAsFixed(6)}, ${alarm.destLng.toStringAsFixed(6)} (${alarm.radiusM}m)',
+                    'Alarm ${alarm.id}: ${alarm.destLat.toStringAsFixed(6)}, ${alarm.destLng.toStringAsFixed(6)} (${_formatRadius(alarm.radiusM)})',
                   ),
                 ),
               ),
@@ -1028,7 +1037,7 @@ class _MapScreenState extends State<MapScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      "Alarm Radius: $radius m",
+                                      "Alarm Radius: ${_formatRadius(radius)}",
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
@@ -1151,7 +1160,7 @@ class _MapScreenState extends State<MapScreen> {
                                     min: 100,
                                     max: 5000,
                                     divisions: 49,
-                                    label: "$radius m",
+                                    label: _formatRadius(radius),
                                     onChanged: (v) =>
                                         setState(() => radius = v.toInt()),
                                   ),
